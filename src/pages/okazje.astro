@@ -1,0 +1,95 @@
+---
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import AffiliateNotice from '../components/AffiliateNotice.astro';
+import { productsByDiscount, activeShops, activeCategories, updatedDate } from '../lib/data.mjs';
+import { productItemList } from '../lib/seo.mjs';
+
+const description = `Wszystkie okazje w jednym miejscu: ${productsByDiscount.length} produktów w obniżonych cenach. Filtruj po sklepie i kategorii, sortuj po wysokości rabatu lub cenie.`;
+---
+<Base title="Okazje i promocje na prezenty" description={description} jsonLd={[productItemList(productsByDiscount.slice(0, 24), 'Okazje')]}>
+  <div class="container-x space-y-5 py-6">
+    <header>
+      <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Okazje</h1>
+      <p class="mt-1 text-muted">Ceny z dnia {updatedDate}. Przed zakupem sprawdź aktualną cenę w sklepie.</p>
+    </header>
+    <AffiliateNotice />
+
+    <form id="filters" class="grid gap-3 rounded-2xl border border-line bg-white p-4 shadow-sm sm:grid-cols-3" onsubmit="return false">
+      <label class="block text-sm font-bold">Sklep
+        <select name="sklep" class="mt-1 block min-h-12 w-full rounded-xl border border-line bg-white px-3 text-base">
+          <option value="">Wszystkie sklepy</option>
+          {activeShops.map((s) => <option value={s.slug}>{s.name}</option>)}
+        </select>
+      </label>
+      <label class="block text-sm font-bold">Kategoria
+        <select name="kategoria" class="mt-1 block min-h-12 w-full rounded-xl border border-line bg-white px-3 text-base">
+          <option value="">Wszystkie kategorie</option>
+          {activeCategories.map((c) => <option value={c.slug}>{c.icon} {c.name}</option>)}
+        </select>
+      </label>
+      <label class="block text-sm font-bold">Sortowanie
+        <select name="sort" class="mt-1 block min-h-12 w-full rounded-xl border border-line bg-white px-3 text-base">
+          <option value="rabat">Największy rabat</option>
+          <option value="cena">Najniższa cena</option>
+        </select>
+      </label>
+    </form>
+
+    <p id="count" class="text-sm font-semibold text-muted" aria-live="polite"></p>
+    <div id="grid" class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+      {productsByDiscount.map((p, i) => <ProductCard product={p} pageType="okazje" eager={i < 4} />)}
+    </div>
+    <p id="empty" class="hidden rounded-2xl border border-line bg-white p-6 text-center text-muted">Brak okazji dla wybranych filtrów.</p>
+    <div class="text-center"><button id="more" type="button" class="btn btn-light hidden">Pokaż więcej</button></div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var PAGE = 48;
+      var form = document.getElementById('filters');
+      var grid = document.getElementById('grid');
+      var cards = Array.prototype.slice.call(grid.children);
+      var more = document.getElementById('more');
+      var empty = document.getElementById('empty');
+      var count = document.getElementById('count');
+      var limit = PAGE;
+
+      var q = new URLSearchParams(location.search);
+      ['sklep', 'kategoria', 'sort'].forEach(function (k) {
+        var v = q.get(k);
+        if (v && form.elements[k].querySelector('option[value="' + v.replace(/[^a-z0-9-]/g, '') + '"]')) form.elements[k].value = v;
+      });
+
+      function apply(resetLimit) {
+        if (resetLimit) limit = PAGE;
+        var shop = form.elements.sklep.value, cat = form.elements.kategoria.value, sort = form.elements.sort.value;
+        var list = cards.filter(function (c) {
+          return (!shop || c.dataset.shop === shop) && (!cat || c.dataset.category === cat);
+        });
+        list.sort(function (a, b) {
+          return sort === 'cena'
+            ? a.dataset.price - b.dataset.price
+            : b.dataset.discount - a.dataset.discount || a.dataset.price - b.dataset.price;
+        });
+        cards.forEach(function (c) { c.hidden = true; c.style.display = 'none'; });
+        list.forEach(function (c, i) {
+          grid.appendChild(c);
+          var show = i < limit;
+          c.hidden = !show; c.style.display = show ? '' : 'none';
+        });
+        empty.classList.toggle('hidden', list.length > 0);
+        more.classList.toggle('hidden', list.length <= limit);
+        count.textContent = 'Znaleziono: ' + list.length;
+        var p = new URLSearchParams();
+        if (shop) p.set('sklep', shop);
+        if (cat) p.set('kategoria', cat);
+        if (sort !== 'rabat') p.set('sort', sort);
+        history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p : ''));
+      }
+      form.addEventListener('change', function () { apply(true); });
+      more.addEventListener('click', function () { limit += PAGE; apply(false); });
+      apply(true);
+    })();
+  </script>
+</Base>

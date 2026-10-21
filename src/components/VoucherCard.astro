@@ -1,0 +1,29 @@
+---
+import { shopById, trackedUrl, validityLabel } from '../lib/data.mjs';
+
+const { voucher, pageType } = Astro.props;
+const shop = shopById.get(voucher.programId);
+const href = trackedUrl(voucher.url, pageType);
+---
+<article class="flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 shadow-sm">
+  <div class="flex items-center gap-3">
+    {shop?.logo
+      ? <img src={shop.logo} alt="" loading="lazy" decoding="async" width="56" height="56" class="h-14 w-14 shrink-0 rounded-lg border border-line bg-white object-contain p-1" />
+      : <span class="grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-blush text-2xl" aria-hidden="true">🏷️</span>}
+    <div class="min-w-0">
+      <p class="text-xs font-semibold uppercase tracking-wide text-muted">{shop?.name} · {voucher.type}</p>
+      <h3 class="text-base font-bold leading-snug">{voucher.title}</h3>
+    </div>
+  </div>
+  {voucher.text && <p class="line-clamp-3 text-sm text-muted">{voucher.text}</p>}
+  {voucher.code && (
+    <div class="flex items-stretch gap-2">
+      <code class="flex flex-1 items-center justify-center rounded-xl border-2 border-dashed border-berry bg-blush px-3 py-2 text-center text-lg font-extrabold tracking-wider text-berry break-all">{voucher.code}</code>
+      <button type="button" data-copy={voucher.code} class="btn btn-light shrink-0 px-4"><span data-label>Kopiuj kod</span></button>
+    </div>
+  )}
+  <p class="text-xs text-muted">{validityLabel(voucher.validTo)}</p>
+  <a href={href} target="_blank" rel="sponsored nofollow noopener" class="btn btn-primary w-full">
+    {voucher.code ? 'Przejdź do sklepu' : 'Przejdź do promocji'}
+  </a>
+</article>

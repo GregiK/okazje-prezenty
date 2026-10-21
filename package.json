@@ -1,0 +1,20 @@
+{
+  "name": "okazje-prezenty",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "predev": "node scripts/fetch-data.mjs",
+    "dev": "astro dev",
+    "fetch-data": "node scripts/fetch-data.mjs",
+    "prebuild": "node scripts/fetch-data.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "node --test scripts/normalize.test.mjs"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.4.1",
+    "tailwindcss": "^4.3.3"
+  }
+}

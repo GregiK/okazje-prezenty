@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import VoucherCard from '../../components/VoucherCard.astro';
+import AffiliateNotice from '../../components/AffiliateNotice.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import { products, vouchers, activeShops, updatedDate } from '../../lib/data.mjs';
+import { productItemList, breadcrumbs } from '../../lib/seo.mjs';
+
+export function getStaticPaths() {
+  return activeShops.map((shop) => ({
+    params: { program: shop.slug },
+    props: {
+      shop,
+      items: products.filter((p) => p.programId === shop.programId).sort((a, b) => b.discount - a.discount),
+      codes: vouchers.filter((v) => v.programId === shop.programId)
+    }
+  }));
+}
+
+const { shop, items, codes } = Astro.props;
+const description = `Okazje i kody rabatowe sklepu ${shop.name}: ${items.length} produktów w obniżonych cenach${codes.length ? ` i ${codes.length} aktualnych kodów` : ''}. Ceny z dnia ${updatedDate}.`;
+const jsonLd = [
+  breadcrumbs(Astro.site, [{ name: 'Strona główna', path: '/' }, { name: shop.name, path: `/sklep/${shop.slug}` }]),
+  ...(items.length ? [productItemList(items.slice(0, 24), `Okazje ${shop.name}`)] : [])
+];
+---
+<Base title={`${shop.name} — okazje i kody rabatowe`} description={description} jsonLd={jsonLd}>
+  <div class="container-x space-y-8 py-6">
+    <header class="flex items-center gap-4">
+      {shop.logo && <img src={shop.logo} alt="" width="96" height="64" class="h-16 w-24 shrink-0 rounded-xl border border-line bg-white object-contain p-2" />}
+      <div>
+        <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">{shop.name}</h1>
+        <p class="text-muted">Okazje i kody rabatowe · ceny z dnia {updatedDate}</p>
+      </div>
+    </header>
+    <AffiliateNotice />
+
+    {codes.length > 0 && (
+      <section>
+        <SectionHead title="🏷️ Kody rabatowe" />
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {codes.map((v) => <VoucherCard voucher={v} pageType="sklep" />)}
+        </div>
+      </section>
+    )}
+
+    <section>
+      <SectionHead title="🔥 Okazje" />
+      {items.length ? (
+        <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+          {items.map((p, i) => <ProductCard product={p} pageType="sklep" eager={i < 4} />)}
+        </div>
+      ) : (
+        <p class="rounded-2xl border border-line bg-white p-6 text-muted">Aktualnie brak okazji z tego sklepu.</p>
+      )}
+    </section>
+  </div>
+</Base>

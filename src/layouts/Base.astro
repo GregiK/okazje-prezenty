@@ -1,0 +1,93 @@
+---
+import '../styles/global.css';
+import { SITE_NAME, SITE_TAGLINE, AFFILIATE_NOTICE } from '../config/site.mjs';
+
+const { title, description, jsonLd = [], noindex = false, ogType = 'website' } = Astro.props;
+const fullTitle = title === SITE_NAME ? `${SITE_NAME} — ${SITE_TAGLINE}` : `${title} | ${SITE_NAME}`;
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const ogImage = new URL('/og-image.png', Astro.site).toString();
+const nav = [
+  { href: '/okazje', label: 'Okazje' },
+  { href: '/kody-rabatowe', label: 'Kody rabatowe', short: 'Kody' },
+  { href: '/o-serwisie', label: 'O serwisie' }
+];
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="theme-color" content="#b8294d" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="pl_PL" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    {jsonLd.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <header class="sticky top-0 z-30 border-b border-line bg-cream/95 backdrop-blur">
+      <div class="container-x flex min-h-14 items-center justify-between gap-3">
+        <a href="/" class="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-base font-extrabold text-berry sm:text-lg">
+          <span aria-hidden="true" class="text-xl sm:text-2xl">🎁</span>{SITE_NAME}
+        </a>
+        <nav aria-label="Główna nawigacja" class="flex gap-1 text-sm font-semibold sm:gap-2 sm:text-base">
+          {nav.map((n) => (
+            <a href={n.href} aria-current={path === n.href ? 'page' : undefined}
+               class:list={['rounded-lg px-2.5 py-2 hover:bg-blush sm:px-3', path === n.href && 'bg-blush text-berry', n.href === '/o-serwisie' && 'hidden sm:block']}>
+              {n.short ? <><span class="sm:hidden">{n.short}</span><span class="hidden sm:inline">{n.label}</span></> : n.label}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-1"><slot /></main>
+
+    <footer class="mt-16 border-t border-line bg-white">
+      <div class="container-x space-y-4 py-8 text-sm text-muted">
+        <p class="rounded-xl bg-blush p-4 font-medium text-ink">{AFFILIATE_NOTICE}</p>
+        <nav aria-label="Stopka" class="flex flex-wrap gap-x-5 gap-y-2 font-semibold text-ink">
+          <a href="/okazje" class="hover:text-berry">Okazje</a>
+          <a href="/kody-rabatowe" class="hover:text-berry">Kody rabatowe</a>
+          <a href="/o-serwisie" class="hover:text-berry">O serwisie</a>
+          <a href="/polityka-prywatnosci" class="hover:text-berry">Polityka prywatności</a>
+        </nav>
+        <p>© {new Date().getFullYear()} {SITE_NAME}. Nazwy sklepów i produktów należą do ich właścicieli.</p>
+      </div>
+    </footer>
+
+    <script is:inline>
+      // Kopiowanie kodu rabatowego (delegacja zdarzeń, bez bibliotek).
+      document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-copy]');
+        if (!btn) return;
+        const code = btn.getAttribute('data-copy');
+        try {
+          await navigator.clipboard.writeText(code);
+        } catch {
+          const ta = document.createElement('textarea');
+          ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); } catch {}
+          ta.remove();
+        }
+        const label = btn.querySelector('[data-label]') || btn;
+        const old = label.textContent;
+        label.textContent = 'Skopiowano ✓';
+        setTimeout(() => (label.textContent = old), 2000);
+      });
+    </script>
+  </body>
+</html>
