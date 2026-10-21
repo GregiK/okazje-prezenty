@@ -1,0 +1,50 @@
+name: Deploy
+
+on:
+  schedule:
+    - cron: '15 4 * * *' # 04:15 UTC = 06:15 czasu PL (lato)
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22' # wymaganie Astro: >=22.22.0
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+      # Błąd pobierania danych (exit 1) przerywa build => deploy się nie wykona,
+      # a na serwerze zostaje poprzednia wersja strony.
+      - name: Build
+        run: npm run build
+        env:
+          WEBE_LOGIN: ${{ secrets.WEBE_LOGIN }}
+          WEBE_PASSWORD: ${{ secrets.WEBE_PASSWORD }}
+          SITE_URL: https://okazje.automatklienta.pl
+
+      - name: Deploy (FTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./dist/
+          server-dir: ./

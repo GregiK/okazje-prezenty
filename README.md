@@ -29,13 +29,23 @@ WEBE_LOGIN=login WEBE_PASSWORD=haslo SITE_URL=https://twojadomena.pl npm run bui
 ## Konfiguracja
 
 - **Sklepy:** `src/config/programs.json` → `programs` (lista `programId`). Po akceptacji kolejnego programu w webePartners dopisz go tutaj.
-- **`SITE_URL`:** domena serwisu (canonical, Open Graph, sitemap). Bez niej używany jest `http://localhost:4321`.
+- **`SITE_URL`:** domena serwisu (canonical, Open Graph, sitemap). Domyślnie `https://okazje.automatklienta.pl`.
 - **Kategorie, tekst o linkach partnerskich:** `src/config/site.mjs`.
 
 ## Śledzenie źródła sprzedaży
 
 Do każdego linku do sklepu dodawane są `param1=www` oraz `param2=<glowna|okazje|kody|sklep>`.
 
-## Wdrożenie
+## Wdrożenie (GitHub Actions → FTP)
 
-Etap 2 (GitHub Actions → FTP na DirectAdmin) — jeszcze niezrobiony.
+Workflow `.github/workflows/deploy.yml` uruchamia się: codziennie o 04:15 UTC (06:15 w Polsce latem), przy pushu na `main` oraz ręcznie. Kroki: `npm ci` → `npm test` → `npm run build` (pobiera dane z webePartners) → wgranie `dist/` przez FTPS na hosting (`public_html` subdomeny). Strona: https://okazje.automatklienta.pl
+
+**Ręczne uruchomienie:** GitHub → zakładka Actions → Deploy → Run workflow.
+
+**Sekrety repozytorium** (Settings → Secrets and variables → Actions): `WEBE_LOGIN`, `WEBE_PASSWORD`, `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`.
+
+**Gdy API webePartners zawiedzie:** `fetch-data` kończy się błędem (exit 1), build pada i deploy się **nie wykonuje** — na serwerze zostaje poprzednia, działająca wersja strony. To celowe (nie publikujemy pustej strony). Wystarczy sprawdzić log w Actions i uruchomić ponownie.
+
+**Zmiana domeny:** w `.github/workflows/deploy.yml` zmień jedną zmienną `SITE_URL` (krok Build); domyślna wartość w `astro.config.mjs` też wskazuje na `https://okazje.automatklienta.pl`. Zadbaj, by konto FTP wskazywało katalog nowej domeny.
+
+`public/.htaccess` (przekierowanie na https, strona 404, kompresja, cache, nagłówki bezpieczeństwa) jest kopiowany do `dist/`.

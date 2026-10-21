@@ -5,8 +5,13 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 
 ## Etapy
 1. **ETAP 1 (zrobiony)** — projekt Astro + Tailwind, skrypt pobierania danych, fixtures, strony, SEO, README.
-2. **ETAP 2 (do zrobienia)** — wdrożenie: GitHub Actions (codzienny cron + build) → FTP na hosting DirectAdmin. Sekrety: `WEBE_LOGIN`, `WEBE_PASSWORD`, dane FTP, `SITE_URL`.
+2. **ETAP 2 (zrobiony)** — wdrożenie: `.github/workflows/deploy.yml` (cron 04:15 UTC, ręcznie, push na `main`) → test → build → FTPS (SamKirkland/FTP-Deploy-Action) do `public_html` subdomeny na DirectAdmin. Sekrety repo: `WEBE_LOGIN`, `WEBE_PASSWORD`, `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`. `SITE_URL` jest w workflow (jawnie, nie sekret).
 3. **ETAP 3 (do ustalenia)** — rozszerzenia (np. więcej sklepów po akceptacji, poradniki/kolekcje prezentowe, Omnibus — patrz niżej).
+
+## Wdrożenie i adres
+- Adres strony: **https://okazje.automatklienta.pl** (domyślny `SITE_URL` w `astro.config.mjs` i w workflow).
+- Błąd `fetch-data` (exit 1) → build pada → deploy się nie wykonuje; na serwerze zostaje poprzednia wersja (celowe).
+- `public/.htaccess` (https, 404, gzip, cache, nagłówki bezpieczeństwa) trafia do `dist/`. Bez `dangerous-clean-slate`.
 
 ## Architektura
 - `scripts/fetch-data.mjs` — pobiera `GetPrograms`, `GetHotPrice` (per program z konfiguracji), `GetVouchers`; normalizuje (`scripts/normalize.mjs`) i zapisuje do `src/data/*.json` (`products`, `vouchers`, `shops`, `meta`). `src/data/` jest w `.gitignore` (generowane).
@@ -27,7 +32,7 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 - `voucherCode` bywa opisem („zapis do newslettera”), nie kodem — wtedy `code=null` i karta ma tylko „Przejdź do promocji”.
 
 ## Zasady
-- Sekrety wyłącznie z env — nigdy w kodzie/commitach. Zmienna `SITE_URL` ustala domenę (canonical, OG, sitemap).
+- Sekrety wyłącznie z env — nigdy w kodzie/commitach. Zmienna `SITE_URL` ustala domenę (canonical, OG, sitemap); zmiana domeny = jedna zmienna w `deploy.yml`.
 - Linki afiliacyjne: `rel="sponsored nofollow noopener" target="_blank"`. Informacja o linkach partnerskich widoczna w stopce i nad listami; ceny z dopiskiem „cena z dnia <data aktualizacji>”.
 - Nie pokazujemy: erotyka, dla dziecka/zabawki/parenting.
 - Oszczędzaj kontekst: dużych odpowiedzi API nie czytaj w całości (`jq`/`head`).

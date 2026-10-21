@@ -1,8 +1,8 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 
-// Domena jeszcze nieustalona — ustaw zmienną środowiskową SITE_URL (np. https://twojadomena.pl).
-const site = (process.env.SITE_URL || 'http://localhost:4321').replace(/\/$/, '');
+// Domyślna domena produkcyjna; nadpisz zmienną środowiskową SITE_URL.
+const site = (process.env.SITE_URL || 'https://okazje.automatklienta.pl').replace(/\/$/, '');
 
 export default defineConfig({
   site,
