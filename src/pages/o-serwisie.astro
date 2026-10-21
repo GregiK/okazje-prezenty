@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import AffiliateNotice from '../components/AffiliateNotice.astro';
+import { activeShops, products, vouchers, updatedDate } from '../lib/data.mjs';
+import { SITE_NAME } from '../config/site.mjs';
+---
+<Base title="O serwisie" description={`${SITE_NAME} to serwis z okazjami, kodami rabatowymi i pomysłami na prezent. Dowiedz się, jak działa i na czym zarabiamy.`}>
+  <div class="container-x max-w-3xl space-y-5 py-8 leading-relaxed">
+    <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">O serwisie</h1>
+    <p>{SITE_NAME} pomaga znaleźć dobry prezent w rozsądnej cenie. Zbieramy obniżki i kody rabatowe z wybranych polskich sklepów internetowych: biżuterii, perfum, gadżetów i prezentów dla bliskich.</p>
+    <h2 class="pt-2 text-xl font-extrabold">Jak to działa?</h2>
+    <ul class="list-disc space-y-1 pl-6">
+      <li>Dane o produktach i kodach pobieramy automatycznie raz dziennie (ostatnia aktualizacja: <strong>{updatedDate}</strong>).</li>
+      <li>Obecnie w serwisie: {activeShops.length} sklepy, {products.length} produktów, {vouchers.length} kodów rabatowych.</li>
+      <li>Kliknięcie „Zobacz w sklepie” przenosi Cię na stronę sklepu — zakup realizujesz u sprzedawcy.</li>
+      <li>Kody rabatowe z datą ważności po terminie automatycznie znikają z serwisu.</li>
+    </ul>
+    <h2 class="pt-2 text-xl font-extrabold">Na czym zarabiamy?</h2>
+    <AffiliateNotice />
+    <p>Jesteśmy wydawcą w programie partnerskim webePartners. Gdy kupisz coś po kliknięciu w nasz link, sklep może wypłacić nam prowizję. <strong>Cena dla Ciebie pozostaje taka sama.</strong> Prowizja nie wpływa na to, czy okazja trafia do serwisu — pokazujemy produkty ze sklepów, z którymi współpracujemy.</p>
+    <h2 class="pt-2 text-xl font-extrabold">O cenach</h2>
+    <p>Ceny pochodzą z danych sklepów w momencie aktualizacji (data przy każdej cenie). Mogą się zmienić — ostateczna cena i dostępność są zawsze na stronie sklepu. „Stara cena” to cena podawana przez sklep przed obniżką.</p>
+    <p>Pytania i uwagi? Skontaktuj się z nami — dane kontaktowe wydawcy zostaną uzupełnione po uruchomieniu serwisu.</p>
+  </div>
+</Base>

@@ -1,0 +1,94 @@
+---
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import VoucherCard from '../components/VoucherCard.astro';
+import AffiliateNotice from '../components/AffiliateNotice.astro';
+import SectionHead from '../components/SectionHead.astro';
+import { products, productsByDiscount, vouchers, activeCategories, activeShops, updatedDate } from '../lib/data.mjs';
+import { productItemList } from '../lib/seo.mjs';
+import { SITE_NAME } from '../config/site.mjs';
+
+const top = productsByDiscount.slice(0, 12);
+const topVouchers = vouchers.slice(0, 6);
+const sections = activeCategories.map((c) => ({
+  ...c,
+  items: products.filter((p) => p.category === c.slug).sort((a, b) => b.discount - a.discount).slice(0, 4)
+}));
+const description = `Sprawdzone okazje, kody rabatowe i pomysły na prezent z polskich sklepów. ${products.length} produktów w obniżonych cenach, aktualizacja codziennie.`;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    url: Astro.site.toString(),
+    inLanguage: 'pl-PL'
+  },
+  productItemList(top, 'Największe obniżki')
+];
+---
+<Base title={SITE_NAME} description={description} jsonLd={jsonLd}>
+  <section class="bg-gradient-to-b from-blush to-cream">
+    <div class="container-x py-10 text-center sm:py-16">
+      <p class="mb-3 inline-block rounded-full bg-white px-4 py-1 text-sm font-bold text-berry shadow-sm">🎁 Aktualizacja: {updatedDate}</p>
+      <h1 class="mx-auto max-w-3xl text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">Okazje i pomysły na prezent</h1>
+      <p class="mx-auto mt-4 max-w-2xl text-lg text-muted">Największe obniżki i aktualne kody rabatowe z wybranych sklepów — biżuteria, perfumy, gadżety i prezenty dla bliskich.</p>
+      <div class="mx-auto mt-6 flex max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center">
+        <a href="/okazje" class="btn btn-primary sm:min-w-52">Zobacz okazje</a>
+        <a href="/kody-rabatowe" class="btn btn-light sm:min-w-52">Kody rabatowe</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="container-x space-y-12 pt-6">
+    <AffiliateNotice />
+
+    {activeCategories.length > 0 && (
+      <nav aria-label="Kategorie" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+        {activeCategories.map((c) => (
+          <a href={`/okazje?kategoria=${c.slug}`} class="flex shrink-0 items-center gap-2 rounded-full border border-line bg-white px-4 py-3 text-sm font-bold shadow-sm hover:border-berry">
+            <span aria-hidden="true">{c.icon}</span>{c.name}
+          </a>
+        ))}
+      </nav>
+    )}
+
+    <section>
+      <SectionHead title="🔥 Największe obniżki" href="/okazje" />
+      <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+        {top.map((p, i) => <ProductCard product={p} pageType="glowna" eager={i < 4} />)}
+      </div>
+    </section>
+
+    <section>
+      <SectionHead title="🏷️ Aktualne kody rabatowe" href="/kody-rabatowe" />
+      {topVouchers.length ? (
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {topVouchers.map((v) => <VoucherCard voucher={v} pageType="glowna" />)}
+        </div>
+      ) : (
+        <p class="rounded-2xl border border-line bg-white p-6 text-muted">Aktualnie brak kodów rabatowych — zajrzyj później, dodajemy je na bieżąco.</p>
+      )}
+    </section>
+
+    {sections.map((c) => (
+      <section>
+        <SectionHead title={`${c.icon} ${c.name}`} href={`/okazje?kategoria=${c.slug}`} />
+        <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          {c.items.map((p) => <ProductCard product={p} pageType="glowna" />)}
+        </div>
+      </section>
+    ))}
+
+    <section>
+      <SectionHead title="🛍️ Sklepy" />
+      <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {activeShops.map((s) => (
+          <a href={`/sklep/${s.slug}`} class="flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-white p-4 text-center font-bold shadow-sm hover:border-berry">
+            {s.logo && <img src={s.logo} alt="" loading="lazy" width="96" height="40" class="h-10 w-auto max-w-full object-contain" />}
+            <span class="text-sm">{s.name}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  </div>
+</Base>

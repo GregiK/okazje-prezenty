@@ -1,0 +1,7 @@
+---
+const { title, href, linkLabel = 'Zobacz wszystkie →' } = Astro.props;
+---
+<div class="mb-4 flex items-end justify-between gap-3">
+  <h2 class="section-title">{title}</h2>
+  {href && <a href={href} class="shrink-0 text-sm font-bold text-berry hover:underline sm:text-base">{linkLabel}</a>}
+</div>

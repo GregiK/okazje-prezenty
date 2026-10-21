@@ -1,0 +1,35 @@
+---
+import { shopById, trackedUrl, formatPrice, updatedDate } from '../lib/data.mjs';
+import { categoryBySlug } from '../lib/data.mjs';
+
+const { product, pageType, eager = false } = Astro.props;
+const shop = shopById.get(product.programId);
+const href = trackedUrl(product.url, pageType);
+const cat = categoryBySlug.get(product.category);
+---
+<article class="product-card flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm"
+  data-shop={shop?.slug} data-category={product.category} data-price={product.price} data-discount={product.discount}>
+  <a href={href} target="_blank" rel="sponsored nofollow noopener" class="relative block aspect-square bg-white" tabindex="-1" aria-hidden="true">
+    <img src={product.image} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" width="400" height="400"
+      class="h-full w-full object-contain p-2" />
+    {product.discount > 0 && (
+      <span class="absolute left-2 top-2 rounded-lg bg-berry px-2 py-1 text-sm font-extrabold text-white shadow">-{product.discount}%</span>
+    )}
+  </a>
+  <div class="flex flex-1 flex-col gap-2 p-3">
+    <p class="text-xs font-semibold uppercase tracking-wide text-muted">{shop?.name}</p>
+    <h3 class="line-clamp-3 text-sm font-bold leading-snug sm:text-base">
+      <a href={href} target="_blank" rel="sponsored nofollow noopener">{product.name}</a>
+    </h3>
+    <div class="mt-auto">
+      <p class="flex flex-wrap items-baseline gap-x-2">
+        <span class="text-xl font-extrabold text-berry">{formatPrice(product.price)}</span>
+        {product.oldPrice && <s class="text-sm text-muted">{formatPrice(product.oldPrice)}</s>}
+      </p>
+      <p class="text-xs text-muted">cena z dnia {updatedDate}</p>
+    </div>
+    <a href={href} target="_blank" rel="sponsored nofollow noopener" class="btn btn-primary mt-1 w-full whitespace-nowrap px-2 text-sm sm:px-5 sm:text-base">
+      Zobacz w sklepie
+    </a>
+  </div>
+</article>
