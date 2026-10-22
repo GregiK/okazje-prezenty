@@ -37,7 +37,7 @@ const description = `Wszystkie okazje w jednym miejscu: ${productsByDiscount.len
     </form>
 
     <p id="count" class="text-sm font-semibold text-muted" aria-live="polite"></p>
-    <div id="grid" class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+    <div id="grid" class="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
       {productsByDiscount.map((p, i) => <ProductCard product={p} pageType="okazje" eager={i < 4} />)}
     </div>
     <p id="empty" class="hidden rounded-2xl border border-line bg-white p-6 text-center text-muted">Brak okazji dla wybranych filtrów.</p>
@@ -46,7 +46,7 @@ const description = `Wszystkie okazje w jednym miejscu: ${productsByDiscount.len
 
   <script is:inline>
     (function () {
-      var PAGE = 48;
+      var PAGE = window.innerWidth < 768 ? 12 : 48; // telefon: jedna kolumna, więc mniej kart na raz
       var form = document.getElementById('filters');
       var grid = document.getElementById('grid');
       var cards = Array.prototype.slice.call(grid.children);
