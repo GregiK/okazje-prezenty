@@ -38,6 +38,7 @@ const images = product.images?.length ? product.images : [product.image];
         <span class="text-xl font-extrabold text-berry">{formatPrice(product.price)}</span>
         {product.oldPrice && <s class="text-sm text-muted">{formatPrice(product.oldPrice)}</s>}
       </p>
+      {product.oldPrice && <p class="text-xs text-muted">Najniższa cena z 30 dni przed obniżką: {formatPrice(product.oldPrice)}</p>}
       <p class="text-xs text-muted">cena z dnia {updatedDate}</p>
     </div>
     <a href={href} target="_blank" rel="sponsored nofollow noopener" class="btn btn-primary mt-1 w-full whitespace-nowrap px-2 text-sm sm:px-5 sm:text-base">

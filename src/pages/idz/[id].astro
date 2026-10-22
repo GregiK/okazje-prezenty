@@ -62,7 +62,7 @@ const title = kind === 'product' ? item.name : item.title;
     <script is:inline define:vars={{ dest }}>
       // Znacznik źródła (param1=www, param2=<strona, z której kliknięto>) i natychmiastowe przekierowanie.
       var q = new URLSearchParams(location.search).get('z');
-      var z = ['glowna', 'okazje', 'kody', 'sklep'].indexOf(q) > -1 ? q : 'inne';
+      var z = ['glowna', 'okazje', 'kody', 'sklep', 'prezenty'].indexOf(q) > -1 ? q : 'inne';
       var u = new URL(dest);
       u.searchParams.set('param1', 'www');
       u.searchParams.set('param2', z);

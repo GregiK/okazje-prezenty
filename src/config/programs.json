@@ -1,19 +1,72 @@
 {
   "_opis": "Lista sklepów pokazywanych w serwisie. Dodaj programId (z GetPrograms, relationId=4 = zaakceptowany), aby sklep pojawił się po następnym buildzie. Pole 'category' to kategoria serwisu (patrz CLAUDE.md).",
   "programs": [
-    { "programId": 261, "name": "262.pl", "note": "biżuteria, gadżety, zestawy prezentowe z grawerem" },
-    { "programId": 12223, "name": "gadzetyrajdowe.pl", "note": "plecaki i gadżety (hobby/lifestyle)" },
-    { "programId": 12897, "name": "Paryskie.pl", "note": "perfumy i kosmetyki" }
+    {
+      "programId": 261,
+      "name": "262.pl",
+      "note": "biżuteria, gadżety, zestawy prezentowe z grawerem"
+    },
+    {
+      "programId": 12223,
+      "name": "gadzetyrajdowe.pl",
+      "note": "plecaki i gadżety (hobby/lifestyle)"
+    },
+    {
+      "programId": 12897,
+      "name": "Paryskie.pl",
+      "note": "perfumy i kosmetyki"
+    }
   ],
   "oczekujace": [
-    { "programId": 11809, "name": "Monarti", "note": "biżuteria, relationId=1 (oczekuje na akceptację)" },
-    { "programId": 12201, "name": "Braccatta.com", "note": "biżuteria, relationId=1" },
-    { "programId": 12706, "name": "Songea", "note": "biżuteria i zegarki, relationId=1" },
-    { "programId": 12945, "name": "Wild Brothers", "note": "lifestyle/kosmetyki, relationId=1" },
-    { "programId": 12253, "name": "Cocoa", "note": "słodycze, relationId=1 (ma kody)" },
-    { "programId": 12258, "name": "Cup&You", "note": "kawa i herbata, relationId=1 (ma kody)" },
-    { "programId": 13738, "name": "Farmona", "note": "kosmetyki, relationId=1" },
-    { "programId": 13726, "name": "Crong.com", "note": "elektronika/zegarki, relationId=1" }
+    {
+      "programId": 11809,
+      "name": "Monarti",
+      "note": "biżuteria, relationId=1 (oczekuje na akceptację)"
+    },
+    {
+      "programId": 12201,
+      "name": "Braccatta.com",
+      "note": "biżuteria, relationId=1"
+    },
+    {
+      "programId": 12706,
+      "name": "Songea",
+      "note": "biżuteria i zegarki, relationId=1"
+    },
+    {
+      "programId": 12945,
+      "name": "Wild Brothers",
+      "note": "lifestyle/kosmetyki, relationId=1"
+    },
+    {
+      "programId": 12253,
+      "name": "Cocoa",
+      "note": "słodycze, relationId=1 (ma kody)"
+    },
+    {
+      "programId": 12258,
+      "name": "Cup&You",
+      "note": "kawa i herbata, relationId=1 (ma kody)"
+    },
+    {
+      "programId": 13738,
+      "name": "Farmona",
+      "note": "kosmetyki, relationId=1"
+    }
   ],
-  "wykluczoneKategorie": ["erotyk", "dla dziecka", "dziecięc", "zabawk", "parenting", "dzieci"]
+  "wykluczoneKategorie": [
+    "erotyk",
+    "dla dziecka",
+    "dziecięc",
+    "zabawk",
+    "parenting",
+    "dzieci"
+  ],
+  "pominiete": [
+    {
+      "programId": 13726,
+      "name": "Crong.com",
+      "note": "zaakceptowany (20%), ale to etui/szkła na konkretne modele iPhone — nie pasuje do prezentów i okazji; dodaj do 'programs', jeśli zmienisz zdanie"
+    }
+  ]
 }

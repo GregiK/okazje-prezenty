@@ -6,7 +6,7 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 ## Etapy
 1. **ETAP 1 (zrobiony)** — projekt Astro + Tailwind, skrypt pobierania danych, fixtures, strony, SEO, README.
 2. **ETAP 2 (zrobiony)** — wdrożenie: `.github/workflows/deploy.yml` (cron 04:15 UTC, ręcznie, push na `main`) → test → build → FTPS (SamKirkland/FTP-Deploy-Action) do `public_html` subdomeny na DirectAdmin. Sekrety repo: `WEBE_LOGIN`, `WEBE_PASSWORD`, `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`. `SITE_URL` jest w workflow (jawnie, nie sekret).
-3. **ETAP 3 (do ustalenia)** — rozszerzenia (np. więcej sklepów po akceptacji, poradniki/kolekcje prezentowe, Omnibus — patrz niżej).
+3. **ETAP 3 (zrobiony)** — uczciwe ceny (polityka Omnibus, patrz niżej), kolekcje prezentowe wg budżetu (`/prezenty/<slug>`, konfiguracja `COLLECTIONS` w `site.mjs`), przegląd nowo zaakceptowanych sklepów (Crong.com odrzucony tematycznie → `pominiete` w `programs.json`). Dalej: kolejne sklepy po akceptacji, poradniki/treści SEO.
 
 ## Wdrożenie i adres
 - Adres strony: **https://okazje.automatklienta.pl** (domyślny `SITE_URL` w `astro.config.mjs` i w workflow).
@@ -26,11 +26,12 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 - `/api/okazje.json` — publiczny feed (produkty wg rabatu + kody, linki bez param1/param2) dla n8n: workflow „Okazje 02 — Posty z okazjami” dokleja `param1=fb` i publikuje na fanpage. Nie zmieniaj nazw pól bez aktualizacji tego workflow.
 - Karta produktu (`ProductCard.astro`): galeria zdjęć (`product.images`, max 8; scroll-snap + strzałki + licznik) i lightbox (`<dialog>` w `Base.astro`); kliknięcie zdjęcia powiększa, do sklepu prowadzi nazwa i przycisk. Suwak pozycji strony po prawej (`#scrollrail` w `Base.astro`, natywny pasek ukryty w `global.css`). Strona główna: `ProductRow` (telefon: kolumna, desktop: jeden rząd).
 - **Przejście do sklepu:** karty produktów/kodów linkują do `/idz/<id>?z=<typ strony>` (`src/pages/idz/[id].astro`, noindex, `Disallow` w robots) — szybka, własna strona z logo sklepu i produktem, która od razu robi `location.replace` na link afiliacyjny z `param1=www&param2=<z>` (z whitelistą: glowna/okazje/kody/sklep, inaczej `inne`). Adres docelowy jest wbudowany w build (nie z parametru URL — brak open redirect). Feed `/api/okazje.json` nadal ma surowe linki afiliacyjne.
+- Kolekcje prezentowe: `/prezenty/do-50-zl`, `do-100-zl`, `do-200-zl`, `powyzej-200-zl` (tylko z ≥3 produktami; w sitemap). `/okazje` ma filtr „tylko z aktualną obniżką” (`?obnizka=1`).
 - Brak bazy, backendu, analityki i cookies.
 
 ## Fakty o API (sprawdzone na prawdziwych danych, 2026-10-21)
 - `productImages` to **obiekt** `{productImagesUrl: [], productThumbUrl}`; `category.webeCategoryName` to tablica; opis w polu `productDescritption` (sic!). Czasem brak kategorii (Paryskie) → kategoria z `shopCategoryName`/nazwy.
-- `priceCut` = % obniżki względem najwyższej ceny z `previousPrice`; stara cena liczona jako `cena / (1 - priceCut/100)`. Obniżki > `MAX_TRUSTED_CUT` (70%) uznajemy za podejrzane (bez przekreślonej ceny).
+- `priceCut` z API **ignorujemy** (liczony od najwyższej ceny w historii, nawet sprzed 2 lat — np. 262.pl ma „obniżki” sprzed 602 dni). **Polityka cen (Omnibus):** `computeDeal()` w `scripts/normalize.mjs` liczy obniżkę z `previousPrice`: początek obecnej ceny = ostatni wpis równy cenie dziś; cena odniesienia = najniższa cena z 30 dni przed tą datą; znaczek -X% i przekreślona cena tylko gdy obecna cena obowiązuje ≤ `DEAL_MAX_AGE_DAYS` (30) dni, odniesienie > cena i obniżka ≤ `MAX_TRUSTED_CUT` (70%). Inaczej `oldPrice=null, discount=0` (produkt widoczny, bez znaczka). Pole `dealSince` = data początku obniżki. Efekt (2026-10-22): 27 z 72 produktów ma obniżkę (wszystkie gadzetyrajdowe.pl + 1 Paryskie); feed dla n8n zawiera `oldPrice/discount` tylko przy takich obniżkach.
 - `relationId`: 4 = zaakceptowany (13 programów), 1 = prawdopodobnie oczekuje na akceptację, 0 = brak relacji. Produkty zwracają tylko zaakceptowane programy.
 - Linki afiliacyjne mają już `?r=...` — parametry dokładamy przez `URL.searchParams`.
 - `voucherCode` bywa opisem („zapis do newslettera”), nie kodem — wtedy `code=null` i karta ma tylko „Przejdź do promocji”.
@@ -42,6 +43,6 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 - Oszczędzaj kontekst: dużych odpowiedzi API nie czytaj w całości (`jq`/`head`).
 - Użytkownik prosi o dokończenie zadania do końca i potwierdzenie; zwracaj się do niego „Grzegorz”.
 
-## Do rozważenia (etap 3)
-- **Omnibus (UE):** „stara cena” pochodzi z historii sklepu/webePartners; dla uczciwości warto pokazywać najniższą cenę z 30 dni lub oznaczać „cena poprzednia wg sklepu”.
+## Do rozważenia (dalej)
 - Dodanie sklepów z `oczekujace` po akceptacji (Cocoa, Cup&You mają kody).
+- Tekst posta w n8n („wcześniej X wg sklepu”) warto zmienić na „najniższa cena z 30 dni przed obniżką” — zgodnie z polityką cen.

@@ -1,0 +1,34 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import AffiliateNotice from '../../components/AffiliateNotice.astro';
+import { activeCollections, updatedDate } from '../../lib/data.mjs';
+import { productItemList, breadcrumbs } from '../../lib/seo.mjs';
+
+export function getStaticPaths() {
+  return activeCollections.map((c) => ({ params: { kolekcja: c.slug }, props: { c } }));
+}
+
+const { c } = Astro.props;
+const description = `${c.blurb} ${c.items.length} pomysłów na prezent, ceny z dnia ${updatedDate}.`;
+const jsonLd = [
+  breadcrumbs(Astro.site, [{ name: 'Strona główna', path: '/' }, { name: c.name, path: `/prezenty/${c.slug}` }]),
+  productItemList(c.items.slice(0, 24), c.name)
+];
+const others = activeCollections.filter((x) => x.slug !== c.slug);
+---
+<Base title={`${c.name} — pomysły na prezent`} description={description} jsonLd={jsonLd}>
+  <div class="container-x space-y-5 py-6">
+    <header>
+      <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">{c.icon} {c.name}</h1>
+      <p class="mt-1 text-muted">{c.blurb} Ceny z dnia {updatedDate}.</p>
+    </header>
+    <AffiliateNotice />
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
+      {c.items.map((p, i) => <ProductCard product={p} pageType="prezenty" eager={i < 4} />)}
+    </div>
+    <nav aria-label="Inne budżety" class="flex flex-wrap gap-2 pt-4">
+      {others.map((o) => <a href={`/prezenty/${o.slug}`} class="rounded-full border border-line bg-white px-4 py-3 text-sm font-bold shadow-sm hover:border-berry">{o.icon} {o.name}</a>)}
+    </nav>
+  </div>
+</Base>

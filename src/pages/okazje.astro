@@ -34,6 +34,10 @@ const description = `Wszystkie okazje w jednym miejscu: ${productsByDiscount.len
           <option value="cena">Najniższa cena</option>
         </select>
       </label>
+      <label class="flex min-h-12 items-center gap-3 self-end rounded-xl border border-line bg-white px-3 text-sm font-bold sm:col-span-3">
+        <input type="checkbox" name="obnizka" value="1" class="h-5 w-5 accent-berry" />
+        Pokaż tylko produkty z aktualną obniżką (z ostatnich 30 dni)
+      </label>
     </form>
 
     <p id="count" class="text-sm font-semibold text-muted" aria-live="polite"></p>
@@ -56,6 +60,7 @@ const description = `Wszystkie okazje w jednym miejscu: ${productsByDiscount.len
       var limit = PAGE;
 
       var q = new URLSearchParams(location.search);
+      if (q.get('obnizka') === '1') form.elements.obnizka.checked = true;
       ['sklep', 'kategoria', 'sort'].forEach(function (k) {
         var v = q.get(k);
         if (v && form.elements[k].querySelector('option[value="' + v.replace(/[^a-z0-9-]/g, '') + '"]')) form.elements[k].value = v;
@@ -63,9 +68,9 @@ const description = `Wszystkie okazje w jednym miejscu: ${productsByDiscount.len
 
       function apply(resetLimit) {
         if (resetLimit) limit = PAGE;
-        var shop = form.elements.sklep.value, cat = form.elements.kategoria.value, sort = form.elements.sort.value;
+        var shop = form.elements.sklep.value, cat = form.elements.kategoria.value, sort = form.elements.sort.value, deal = form.elements.obnizka.checked;
         var list = cards.filter(function (c) {
-          return (!shop || c.dataset.shop === shop) && (!cat || c.dataset.category === cat);
+          return (!shop || c.dataset.shop === shop) && (!cat || c.dataset.category === cat) && (!deal || Number(c.dataset.discount) > 0);
         });
         list.sort(function (a, b) {
           return sort === 'cena'
@@ -84,6 +89,7 @@ const description = `Wszystkie okazje w jednym miejscu: ${productsByDiscount.len
         var p = new URLSearchParams();
         if (shop) p.set('sklep', shop);
         if (cat) p.set('kategoria', cat);
+        if (deal) p.set('obnizka', '1');
         if (sort !== 'rabat') p.set('sort', sort);
         history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p : ''));
       }
