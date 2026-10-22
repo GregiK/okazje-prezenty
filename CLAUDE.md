@@ -25,6 +25,7 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 - Strony: `/`, `/okazje` (filtry/sortowanie po stronie klienta, ~40 linii JS inline, stan w URL: `?sklep=&kategoria=&sort=`), `/kody-rabatowe`, `/sklep/[program]`, `/o-serwisie`, `/polityka-prywatnosci`, `/404`, `robots.txt`, `sitemap.xml`.
 - `/api/okazje.json` — publiczny feed (produkty wg rabatu + kody, linki bez param1/param2) dla n8n: workflow „Okazje 02 — Posty z okazjami” dokleja `param1=fb` i publikuje na fanpage. Nie zmieniaj nazw pól bez aktualizacji tego workflow.
 - Karta produktu (`ProductCard.astro`): galeria zdjęć (`product.images`, max 8; scroll-snap + strzałki + licznik) i lightbox (`<dialog>` w `Base.astro`); kliknięcie zdjęcia powiększa, do sklepu prowadzi nazwa i przycisk. Suwak pozycji strony po prawej (`#scrollrail` w `Base.astro`, natywny pasek ukryty w `global.css`). Strona główna: `ProductRow` (telefon: kolumna, desktop: jeden rząd).
+- **Przejście do sklepu:** karty produktów/kodów linkują do `/idz/<id>?z=<typ strony>` (`src/pages/idz/[id].astro`, noindex, `Disallow` w robots) — szybka, własna strona z logo sklepu i produktem, która od razu robi `location.replace` na link afiliacyjny z `param1=www&param2=<z>` (z whitelistą: glowna/okazje/kody/sklep, inaczej `inne`). Adres docelowy jest wbudowany w build (nie z parametru URL — brak open redirect). Feed `/api/okazje.json` nadal ma surowe linki afiliacyjne.
 - Brak bazy, backendu, analityki i cookies.
 
 ## Fakty o API (sprawdzone na prawdziwych danych, 2026-10-21)
@@ -36,7 +37,7 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 
 ## Zasady
 - Sekrety wyłącznie z env — nigdy w kodzie/commitach. Zmienna `SITE_URL` ustala domenę (canonical, OG, sitemap); zmiana domeny = jedna zmienna w `deploy.yml`.
-- Linki afiliacyjne: `rel="sponsored nofollow noopener" target="_blank"`. Informacja o linkach partnerskich widoczna w stopce i nad listami; ceny z dopiskiem „cena z dnia <data aktualizacji>”.
+- Linki afiliacyjne (i linki do `/idz/`): `rel="sponsored nofollow noopener" target="_blank"`. Informacja o linkach partnerskich widoczna w stopce i nad listami; ceny z dopiskiem „cena z dnia <data aktualizacji>”.
 - Nie pokazujemy: erotyka, dla dziecka/zabawki/parenting.
 - Oszczędzaj kontekst: dużych odpowiedzi API nie czytaj w całości (`jq`/`head`).
 - Użytkownik prosi o dokończenie zadania do końca i potwierdzenie; zwracaj się do niego „Grzegorz”.

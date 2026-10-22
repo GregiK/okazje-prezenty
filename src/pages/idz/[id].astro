@@ -1,0 +1,73 @@
+---
+// Strona przejścia do sklepu: pokazuje się natychmiast (statyczna, lekka) i od razu przekierowuje
+// przez link afiliacyjny. Adres docelowy jest wbudowany w stronę w czasie buildu (z danych API) —
+// nie przyjmujemy go z parametrów URL, więc to nie jest „open redirect”.
+import '../../styles/global.css';
+import { products, vouchers, shopById, trackedUrl, formatPrice } from '../../lib/data.mjs';
+import { SITE_NAME } from '../../config/site.mjs';
+
+export function getStaticPaths() {
+  return [
+    ...products.map((p) => ({ params: { id: p.id }, props: { kind: 'product', item: p } })),
+    ...vouchers.map((v) => ({ params: { id: v.id }, props: { kind: 'voucher', item: v } }))
+  ];
+}
+
+const { kind, item } = Astro.props;
+const shop = shopById.get(item.programId);
+const dest = item.url;
+const fallback = trackedUrl(dest, 'inne');
+const title = kind === 'product' ? item.name : item.title;
+---
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Przechodzimy do sklepu… | {SITE_NAME}</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#b8294d" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://webep1.com" />
+    <noscript><meta http-equiv="refresh" content={`1;url=${fallback}`} /></noscript>
+  </head>
+  <body class="grid min-h-screen place-items-center bg-cream p-4">
+    <main class="w-full max-w-md rounded-3xl border border-line bg-white p-6 text-center shadow-lg" aria-live="polite">
+      {shop?.logo && <img src={shop.logo} alt="" width="120" height="56" class="mx-auto mb-4 h-14 w-auto max-w-[60%] object-contain" />}
+      <p class="text-sm font-semibold uppercase tracking-wide text-muted">Przechodzimy do sklepu</p>
+      <h1 class="mt-1 text-2xl font-extrabold text-berry">{shop?.name ?? 'sklepu'}</h1>
+
+      {kind === 'product' && (
+        <div class="mt-5 flex items-center gap-3 rounded-2xl bg-cream p-3 text-left">
+          <img src={item.image} alt="" width="80" height="80" class="h-20 w-20 shrink-0 rounded-xl bg-white object-contain" />
+          <div class="min-w-0">
+            <p class="line-clamp-2 text-base font-bold leading-snug">{title}</p>
+            <p class="mt-1 text-lg font-extrabold text-berry">{formatPrice(item.price)}</p>
+          </div>
+        </div>
+      )}
+      {kind === 'voucher' && (
+        <div class="mt-5 rounded-2xl bg-cream p-3 text-left">
+          <p class="text-base font-bold leading-snug">{title}</p>
+          {item.code && <p class="mt-2 text-sm text-muted">Kod: <strong class="text-berry">{item.code}</strong> (skopiuj go wcześniej na stronie serwisu)</p>}
+        </div>
+      )}
+
+      <div class="mx-auto mt-6 h-10 w-10 animate-spin rounded-full border-4 border-blush border-t-berry" aria-hidden="true"></div>
+      <p class="mt-4 text-sm text-muted">Za chwilę zobaczysz ofertę. Jeśli nic się nie dzieje:</p>
+      <a id="go" href={fallback} rel="sponsored nofollow noopener" class="btn btn-primary mt-3 w-full">Przejdź do sklepu</a>
+      <p class="mt-4 text-xs text-muted">Link partnerski — za zakupy możemy otrzymać prowizję, cena dla Ciebie się nie zmienia.</p>
+    </main>
+
+    <script is:inline define:vars={{ dest }}>
+      // Znacznik źródła (param1=www, param2=<strona, z której kliknięto>) i natychmiastowe przekierowanie.
+      var q = new URLSearchParams(location.search).get('z');
+      var z = ['glowna', 'okazje', 'kody', 'sklep'].indexOf(q) > -1 ? q : 'inne';
+      var u = new URL(dest);
+      u.searchParams.set('param1', 'www');
+      u.searchParams.set('param2', z);
+      document.getElementById('go').href = u.toString();
+      location.replace(u.toString());
+    </script>
+  </body>
+</html>
