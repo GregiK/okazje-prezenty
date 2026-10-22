@@ -1,6 +1,6 @@
 // Publiczny feed okazji dla automatyzacji (n8n: posty z okazjami na Facebooka).
 // Linki są „surowe” (bez param1/param2) — n8n sam dokleja znacznik źródła, np. param1=fb.
-import { productsByDiscount, vouchers, shopById, meta } from '../../lib/data.mjs';
+import { productsByDiscount, vouchers, shopById, productPath, meta } from '../../lib/data.mjs';
 import { SITE_NAME } from '../../config/site.mjs';
 
 export function GET({ site }: { site: URL }) {
@@ -20,6 +20,7 @@ export function GET({ site }: { site: URL }) {
       oldPrice: p.oldPrice ?? null,
       discount: p.discount ?? 0,
       image: p.image,
+      pageUrl: new URL(productPath(p), site).toString(),
       url: p.url
     })),
     vouchers: vouchers.map((v) => ({

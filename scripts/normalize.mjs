@@ -127,7 +127,7 @@ export function normalizeProduct(raw, { excludedWords = [], excludedPhrases = []
     product: {
       id: String(raw.webeProductId),
       name: String(raw.productName).trim(),
-      description: stripHtml(raw.productDescritption ?? raw.productDescription, 200),
+      description: stripHtml(raw.productDescritption ?? raw.productDescription, 600),
       image,
       images: gallery,
       brand: (raw.productBrand ?? '').trim() || null,
