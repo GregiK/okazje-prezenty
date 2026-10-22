@@ -5,7 +5,7 @@ import VoucherCard from '../components/VoucherCard.astro';
 import AffiliateNotice from '../components/AffiliateNotice.astro';
 import ProductRow from '../components/ProductRow.astro';
 import SectionHead from '../components/SectionHead.astro';
-import { products, productsByDiscount, dealProducts, vouchers, activeCategories, activeCollections, activeShops, updatedDate } from '../lib/data.mjs';
+import { products, productsByDiscount, dealProducts, heroProducts, vouchers, activeCategories, activeCollections, activeShops, updatedDate } from '../lib/data.mjs';
 import { productItemList } from '../lib/seo.mjs';
 import { SITE_NAME } from '../config/site.mjs';
 
@@ -29,14 +29,26 @@ const jsonLd = [
 ];
 ---
 <Base title={SITE_NAME} description={description} jsonLd={jsonLd}>
-  <section class="bg-gradient-to-b from-blush to-cream">
-    <div class="container-x py-10 text-center sm:py-16">
-      <p class="mb-3 inline-block rounded-full bg-white px-4 py-1 text-sm font-bold text-berry shadow-sm">🎁 Aktualizacja: {updatedDate}</p>
-      <h1 class="mx-auto max-w-3xl text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">Okazje i pomysły na prezent</h1>
-      <p class="mx-auto mt-4 max-w-2xl text-lg text-muted">Największe obniżki i aktualne kody rabatowe z wybranych sklepów — biżuteria, perfumy, gadżety i prezenty dla bliskich.</p>
-      <div class="mx-auto mt-6 flex max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center">
-        <a href="/okazje" class="btn btn-primary sm:min-w-52">Zobacz okazje</a>
-        <a href="/kody-rabatowe" class="btn btn-light sm:min-w-52">Kody rabatowe</a>
+  <section class="relative isolate overflow-hidden bg-gradient-to-b from-blush to-cream">
+    {heroProducts.length === 3 && (
+      <>
+        <div class="absolute inset-x-0 top-0 -z-20 grid h-56 grid-cols-3 sm:inset-0 sm:h-auto" aria-hidden="true">
+          {heroProducts.map((p) => (
+            <img src={p.image} alt="" width="640" height="640" loading="eager" fetchpriority="low" decoding="async" draggable="false" class="h-full w-full bg-white object-cover" />
+          ))}
+        </div>
+        <div class="absolute inset-x-0 top-0 -z-10 h-56 bg-gradient-to-b from-transparent via-cream/25 to-cream sm:inset-0 sm:h-auto sm:from-cream/30 sm:via-cream/55" aria-hidden="true"></div>
+      </>
+    )}
+    <div class="container-wide pb-10 pt-40 text-center sm:py-16 lg:py-24">
+      <div class="mx-auto max-w-3xl rounded-3xl bg-cream/85 px-4 py-6 shadow-sm backdrop-blur-sm sm:px-8 sm:py-8">
+        <p class="mb-3 inline-block rounded-full bg-white px-4 py-1 text-sm font-bold text-berry shadow-sm">🎁 Aktualizacja: {updatedDate}</p>
+        <h1 class="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">Okazje i pomysły na prezent</h1>
+        <p class="mx-auto mt-4 max-w-2xl text-lg text-muted">Największe obniżki i aktualne kody rabatowe z wybranych sklepów — biżuteria, perfumy, gadżety i prezenty dla bliskich.</p>
+        <div class="mx-auto mt-6 flex max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center">
+          <a href="/okazje" class="btn btn-primary sm:min-w-52">Zobacz okazje</a>
+          <a href="/kody-rabatowe" class="btn btn-light sm:min-w-52">Kody rabatowe</a>
+        </div>
       </div>
     </div>
   </section>

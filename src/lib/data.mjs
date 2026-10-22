@@ -54,3 +54,27 @@ export function collectionProducts(c) {
 
 /** Kolekcje, które mają co najmniej 3 produkty. */
 export const activeCollections = COLLECTIONS.map((c) => ({ ...c, items: collectionProducts(c) })).filter((c) => c.items.length >= 3);
+
+/**
+ * 3 najciekawsze produkty do tła banera: najlepsze obniżki, każdy z innego sklepu (potem z innej „rodziny” nazw,
+ * żeby nie wyszły trzy plecaki w różnych kolorach). Gdy obniżek jest za mało — uzupełniamy najtańszymi z innych sklepów.
+ */
+export function pickHeroProducts(n = 3) {
+  const family = (p) => p.name.toLowerCase().split(/\s+/).slice(0, 2).join(' ');
+  // Uzupełnienie bez obniżek: najpierw biżuteria i perfumy (najlepiej wyglądają w banerze), potem droższe.
+  const prio = (p) => (p.category === 'bizuteria' || p.category === 'perfumy-uroda' ? 0 : 1);
+  const filler = [...products].sort((a, b) => prio(a) - prio(b) || b.price - a.price);
+  const pool = [...dealProducts, ...filler];
+  const out = [];
+  const take = (pred) => {
+    for (const p of pool) {
+      if (out.length >= n) return;
+      if (!out.includes(p) && p.image && pred(p)) out.push(p);
+    }
+  };
+  take((p) => !out.some((o) => o.programId === p.programId));
+  take((p) => !out.some((o) => family(o) === family(p)));
+  take(() => true);
+  return out.slice(0, n);
+}
+export const heroProducts = pickHeroProducts();
