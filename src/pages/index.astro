@@ -32,9 +32,9 @@ const jsonLd = [
   <section class="relative isolate overflow-hidden bg-gradient-to-b from-blush to-cream">
     {heroProducts.length === 3 && (
       <>
-        <div class="absolute inset-x-0 top-0 -z-20 grid h-56 grid-cols-3 sm:inset-0 sm:h-auto" aria-hidden="true">
-          {heroProducts.map((p) => (
-            <img src={p.image} alt="" width="640" height="640" loading="eager" fetchpriority="low" decoding="async" draggable="false" class="h-full w-full bg-white object-cover" />
+        <div class="absolute inset-x-0 top-0 -z-20 grid h-56 grid-cols-2 sm:inset-0 sm:grid-cols-3 sm:h-auto" aria-hidden="true">
+          {heroProducts.map((p, i) => (
+            <img src={p.image} alt="" width="640" height="640" loading="eager" fetchpriority="low" decoding="async" draggable="false" class={`h-full w-full bg-white object-cover${i === 2 ? ' hidden sm:block' : ''}`} />
           ))}
         </div>
         <div class="absolute inset-x-0 top-0 -z-10 h-56 bg-gradient-to-b from-transparent via-cream/25 to-cream sm:inset-0 sm:h-auto sm:from-cream/30 sm:via-cream/55" aria-hidden="true"></div>
