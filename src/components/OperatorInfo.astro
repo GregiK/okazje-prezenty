@@ -1,0 +1,15 @@
+---
+import { OPERATOR } from '../config/site.mjs';
+const filled = OPERATOR.name && OPERATOR.address && OPERATOR.email;
+if (!filled) console.warn('[OperatorInfo] UWAGA: uzupełnij OPERATOR w src/config/site.mjs (dane wydawcy) przed publicznym startem.');
+---
+{filled ? (
+  <address class="rounded-xl border border-line bg-white p-4 not-italic leading-relaxed">
+    <strong>{OPERATOR.name}</strong><br />
+    {OPERATOR.address}<br />
+    {OPERATOR.nip && <>NIP: {OPERATOR.nip}<br /></>}
+    E-mail: <a href={`mailto:${OPERATOR.email}`} class="font-bold text-berry underline">{OPERATOR.email}</a>
+  </address>
+) : (
+  <p class="rounded-xl border border-gold/50 bg-gold/10 p-4">Dane wydawcy serwisu (nazwa, adres, e-mail) zostaną uzupełnione przed oficjalnym uruchomieniem serwisu.</p>
+)}

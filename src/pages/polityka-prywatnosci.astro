@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { SITE_NAME } from '../config/site.mjs';
+import OperatorInfo from '../components/OperatorInfo.astro';
 ---
 <Base title="Polityka prywatności" description={`Polityka prywatności serwisu ${SITE_NAME}: nie używamy analityki ani plików cookies śledzących.`}>
   <div class="container-x max-w-3xl space-y-4 py-8 leading-relaxed">
@@ -15,9 +16,11 @@ import { SITE_NAME } from '../config/site.mjs';
     <h2 class="pt-2 text-xl font-extrabold">Linki partnerskie</h2>
     <p>Po kliknięciu w link do sklepu zostajesz przekierowany(-a) przez system partnerski webePartners, który — zgodnie z własną polityką — może zapisać plik cookie niezbędny do rozliczenia prowizji za zakup. Cookie to ustawia webePartners lub sklep po kliknięciu, nie nasz serwis. Szczegóły znajdziesz w politykach prywatności webePartners i danego sklepu.</p>
     <p>Do linku dodajemy parametry <code>param1=www</code> oraz <code>param2=&lt;typ strony&gt;</code>, które wskazują wyłącznie, z której części serwisu pochodzi kliknięcie — nie identyfikują Ciebie.</p>
+    <h2 class="pt-2 text-xl font-extrabold">Zasoby zewnętrzne</h2>
+    <p>Zdjęcia produktów i logotypy sklepów ładują się z serwerów sieci partnerskiej webePartners (<code>image.weben1.com</code>). Przy ich pobieraniu ten serwer widzi Twój adres IP i dane przeglądarki — tak jak każdy serwer, z którego pobierasz plik. Nie używamy zewnętrznych czcionek, skryptów reklamowych ani analitycznych.</p>
     <h2 class="pt-2 text-xl font-extrabold">Logi serwera</h2>
     <p>Hosting może rejestrować standardowe logi techniczne (adres IP, czas żądania) w celu zapewnienia bezpieczeństwa i działania serwera.</p>
-    <h2 class="pt-2 text-xl font-extrabold">Kontakt</h2>
-    <p>Dane administratora serwisu zostaną uzupełnione po uruchomieniu serwisu.</p>
+    <h2 class="pt-2 text-xl font-extrabold">Administrator i kontakt</h2>
+    <OperatorInfo />
   </div>
 </Base>

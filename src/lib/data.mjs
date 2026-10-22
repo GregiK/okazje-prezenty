@@ -26,11 +26,9 @@ const dateFmt = new Intl.DateTimeFormat('pl-PL', { day: '2-digit', month: '2-dig
 export const formatDate = (iso) => dateFmt.format(new Date(iso));
 export const updatedDate = formatDate(meta.updatedAt);
 
-/** Kod ważny „na zawsze” (data > 2 lata od teraz) pokazujemy jako bezterminowy. */
+/** Termin ważności kodu — zawsze pokazujemy datę z API (bez „bezterminowo”, żeby nie sugerować więcej niż wiemy). */
 export function validityLabel(iso) {
-  if (!iso) return 'Bez określonego terminu';
-  const years = (new Date(iso) - new Date(meta.updatedAt)) / (365 * 864e5);
-  return years > 2 ? 'Bez określonego terminu' : `Ważny do ${formatDate(iso)}`;
+  return iso ? `Ważny do ${formatDate(iso)}` : 'Termin ważności: sprawdź w sklepie';
 }
 
 export const productsByDiscount = [...products].sort((a, b) => b.discount - a.discount || a.price - b.price);

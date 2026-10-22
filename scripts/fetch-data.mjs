@@ -69,6 +69,8 @@ async function main() {
     : config.programs;
   const ids = new Set(configured.map((p) => p.programId));
   const excluded = config.wykluczoneKategorie ?? [];
+  const excludedPhrases = config.wykluczoneFrazy ?? [];
+  const excludedNameRegex = config.wykluczoneNazwy ?? [];
   const now = new Date();
   log(`tryb: ${mode}, programów w konfiguracji: ${ids.size}`);
 
@@ -122,7 +124,7 @@ async function main() {
   for (const raw of rawProducts) {
     const pid = Number(raw.programId);
     if (!ids.has(pid)) continue;
-    const res = normalizeProduct(raw, { excludedWords: excluded, now });
+    const res = normalizeProduct(raw, { excludedWords: excluded, excludedPhrases, excludedNameRegex, now });
     if (res.reject) {
       rejects[res.reject] = (rejects[res.reject] ?? 0) + 1;
       continue;

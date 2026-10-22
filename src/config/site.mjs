@@ -22,7 +22,15 @@ export const MAX_TRUSTED_CUT = 70; // % — wyższe obniżki traktujemy jako pod
 // Kolekcje „prezent według budżetu” (strony /prezenty/<slug>). max = górna granica ceny (włącznie), min = dolna (wyłącznie).
 export const COLLECTIONS = [
   { slug: 'do-50-zl', name: 'Prezent do 50 zł', icon: '🎀', max: 50, blurb: 'Małe upominki na każdą okazję: breloki, drobiazgi z grawerem i gadżety do 50 zł.' },
-  { slug: 'do-100-zl', name: 'Prezent do 100 zł', icon: '🎁', max: 100, blurb: 'Pomysły na prezent do 100 zł: personalizowane upominki, biżuteria i kosmetyki.' },
-  { slug: 'do-200-zl', name: 'Prezent do 200 zł', icon: '💝', max: 200, blurb: 'Prezenty do 200 zł: srebrna biżuteria, perfumy i praktyczne gadżety.' },
+  { slug: '50-200-zl', name: 'Prezent od 50 do 200 zł', icon: '🎁', min: 50, max: 200, blurb: 'Pomysły na prezent od 50 do 200 zł: personalizowane upominki, srebrna biżuteria, perfumy i kosmetyki.' },
   { slug: 'powyzej-200-zl', name: 'Prezent powyżej 200 zł', icon: '👑', min: 200, blurb: 'Na wyjątkowe okazje: plecaki premium, perfumy i większe upominki.' }
 ];
+
+// Dane wydawcy serwisu (wymagane do identyfikacji usługodawcy / reklamodawcy). UZUPEŁNIJ przed publicznym startem.
+// Pola puste => strony pokazują komunikat o brakujących danych zamiast danych kontaktowych.
+export const OPERATOR = {
+  name: '',      // np. imię i nazwisko / firma
+  address: '',   // adres siedziby / miejsce prowadzenia działalności
+  nip: '',       // NIP (jeśli dotyczy)
+  email: ''      // adres e-mail do kontaktu
+};

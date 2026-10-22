@@ -53,6 +53,13 @@ test('Omnibus: obniżka starsza niż 30 dni, podwyżka albo brak historii => bra
   assert.equal(computeDeal(80, notEnding, NOW), null);
 });
 
+test('produkt: zamienniki i numerowana linia „N° 123” są wykluczane', () => {
+  const opts = { excludedPhrases: ['zamiennik', 'nalewan'], excludedNameRegex: ['^N°\\s*\\d+'], now: NOW };
+  assert.match(normalizeProduct({ ...base, productDescritption: 'Zamiennik Chanel N°5' }, opts).reject, /fraza/);
+  assert.match(normalizeProduct({ ...base, productName: 'N° 126' }, opts).reject, /nazwa/);
+  assert.ok(normalizeProduct(base, opts).product);
+});
+
 test('produkt: galeria — duplikaty usuwane, max 8, pierwsze zdjęcie = image', () => {
   const urls = Array.from({ length: 12 }, (_, i) => `https://img/${i % 10}.jpg`);
   const { product } = normalizeProduct({ ...base, productImages: { productImagesUrl: urls } });

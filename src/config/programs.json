@@ -68,5 +68,15 @@
       "name": "Crong.com",
       "note": "zaakceptowany (20%), ale to etui/szkła na konkretne modele iPhone — nie pasuje do prezentów i okazji; dodaj do 'programs', jeśli zmienisz zdanie"
     }
-  ]
+  ],
+  "wykluczoneFrazy": [
+    "zamiennik",
+    "nalewan",
+    "inspirowan",
+    "odpowiednik"
+  ],
+  "wykluczoneNazwy": [
+    "^N°\\s*\\d+"
+  ],
+  "_wykluczenia": "wykluczoneFrazy: pomijamy produkty, których nazwa lub opis zawiera te frazy (zamienniki/„perfumy nalewane” — ryzyko wprowadzenia w błąd i cudzych znaków towarowych). wykluczoneNazwy: wyrażenia regularne dopasowywane do nazwy (np. numerowana linia „N° 126”)."
 }

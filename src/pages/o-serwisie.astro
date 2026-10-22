@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import AffiliateNotice from '../components/AffiliateNotice.astro';
+import OperatorInfo from '../components/OperatorInfo.astro';
 import { activeShops, products, vouchers, updatedDate } from '../lib/data.mjs';
 import { SITE_NAME } from '../config/site.mjs';
 ---
@@ -21,6 +22,8 @@ import { SITE_NAME } from '../config/site.mjs';
     <h2 class="pt-2 text-xl font-extrabold">O cenach i obniżkach</h2>
     <p>Ceny pochodzą z danych sklepów w momencie aktualizacji (data przy każdej cenie). Mogą się zmienić — ostateczna cena i dostępność są zawsze na stronie sklepu.</p>
     <p>Znaczek „−X%” i przekreśloną cenę pokazujemy <strong>tylko przy świeżych obniżkach</strong>: gdy obecna cena obowiązuje od nie więcej niż 30 dni. Cena „przed obniżką” to <strong>najniższa cena z 30 dni przed obniżką</strong>, wyliczona z historii cen sklepu. Produkty bez świeżej obniżki wyświetlamy bez znaczka i bez przekreślenia.</p>
-    <p>Pytania i uwagi? Skontaktuj się z nami — dane kontaktowe wydawcy zostaną uzupełnione po uruchomieniu serwisu.</p>
+    <h2 class="pt-2 text-xl font-extrabold">Wydawca serwisu i kontakt</h2>
+    <OperatorInfo />
+    <p class="text-sm text-muted">Serwis ma charakter informacyjno-reklamowy: nie sprzedajemy produktów i nie jesteśmy stroną umowy sprzedaży. Reklamacje i pytania o zamówienie kieruj do sprzedawcy (sklepu).</p>
   </div>
 </Base>

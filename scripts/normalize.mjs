@@ -100,7 +100,7 @@ export function computeDeal(price, previousPrice, now = new Date()) {
 }
 
 /** Zwraca znormalizowany produkt albo null (z powodem odrzucenia w drugim polu). */
-export function normalizeProduct(raw, { excludedWords = [], programCategory = '', now = new Date() } = {}) {
+export function normalizeProduct(raw, { excludedWords = [], excludedPhrases = [], excludedNameRegex = [], programCategory = '', now = new Date() } = {}) {
   const price = parsePrice(raw.productPrice);
   if (!(price > 0)) return { reject: 'cena' };
   const images = toArray(raw.productImages?.productImagesUrl).filter(isHttpUrl);
@@ -114,6 +114,9 @@ export function normalizeProduct(raw, { excludedWords = [], programCategory = ''
   const catNames = toArray(raw.category?.webeCategoryName);
   const catText = [...catNames, raw.shopCategoryName, raw.productName].join(' | ');
   if (isExcluded(catText, excludedWords)) return { reject: 'kategoria wykluczona' };
+  const fullText = `${raw.productName} ${raw.productDescritption ?? raw.productDescription ?? ''}`;
+  if (isExcluded(fullText, excludedPhrases)) return { reject: 'fraza wykluczona (np. zamiennik)' };
+  if (excludedNameRegex.some((re) => new RegExp(re, 'i').test(String(raw.productName).trim()))) return { reject: 'nazwa wykluczona' };
 
   const deal = computeDeal(price, raw.previousPrice, now);
   const oldPrice = deal ? deal.reference : null;
