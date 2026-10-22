@@ -3,7 +3,7 @@
 // Tryby:
 //   WEBE_LOGIN + WEBE_PASSWORD -> Basic Auth (GitHub Actions)
 //   WEBE_PROXY_AUTH=1          -> zapytania bez nagłówka (proxy środowiska dokłada autoryzację)
-//   brak env                   -> fixtures z katalogu fixtures/
+//   brak env                   -> fixtures z katalogu fixtures/ (chyba że REQUIRE_LIVE=1 -> błąd)
 // Opcjonalnie: PROGRAM_IDS=261,12223 nadpisuje listę z src/config/programs.json (testy).
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -23,6 +23,12 @@ if (mode === 'proxy' && process.env.NODE_USE_ENV_PROXY !== '1') {
     env: { ...process.env, NODE_USE_ENV_PROXY: '1' }
   });
   process.exit(r.status ?? 1);
+}
+
+// REQUIRE_LIVE=1 (ustawiane w CI): brak danych logowania ma przerwać build zamiast po cichu użyć fixtures.
+if (process.env.REQUIRE_LIVE === '1' && mode === 'fixtures') {
+  console.error('[fetch-data] BŁĄD: REQUIRE_LIVE=1, ale brak WEBE_LOGIN/WEBE_PASSWORD — nie wdrażam danych z fixtures');
+  process.exit(1);
 }
 
 const log = (...a) => console.log('[fetch-data]', ...a);

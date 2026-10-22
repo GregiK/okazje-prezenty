@@ -38,6 +38,7 @@ jobs:
           WEBE_LOGIN: ${{ secrets.WEBE_LOGIN }}
           WEBE_PASSWORD: ${{ secrets.WEBE_PASSWORD }}
           SITE_URL: https://okazje.automatklienta.pl
+          REQUIRE_LIVE: '1' # brak sekretów webePartners = błąd, nie deploy fixtures
 
       - name: Deploy (FTP)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
