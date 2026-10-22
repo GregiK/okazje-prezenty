@@ -38,7 +38,7 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
   </head>
   <body class="flex min-h-screen flex-col">
     <header class="sticky top-0 z-30 border-b border-line bg-cream/95 backdrop-blur">
-      <div class="container-x flex min-h-14 items-center justify-between gap-3">
+      <div class="container-wide flex min-h-14 items-center justify-between gap-3">
         <a href="/" class="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-base font-extrabold text-berry sm:text-lg">
           <span aria-hidden="true" class="text-xl sm:text-2xl">🎁</span>{SITE_NAME}
         </a>
@@ -56,7 +56,7 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
     <main class="flex-1"><slot /></main>
 
     <footer class="mt-16 border-t border-line bg-white">
-      <div class="container-x space-y-4 py-8 text-sm text-muted">
+      <div class="container-wide space-y-4 py-8 text-sm text-muted">
         <p class="rounded-xl bg-blush p-4 font-medium text-ink">{AFFILIATE_NOTICE}</p>
         <nav aria-label="Stopka" class="flex flex-wrap gap-x-5 gap-y-2 font-semibold text-ink">
           <a href="/okazje" class="hover:text-berry">Okazje</a>

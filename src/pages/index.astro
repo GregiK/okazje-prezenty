@@ -40,7 +40,7 @@ const jsonLd = [
     </div>
   </section>
 
-  <div class="container-x space-y-12 pt-6">
+  <div class="container-wide space-y-12 pt-6">
     <AffiliateNotice />
 
     {activeCategories.length > 0 && (
@@ -56,7 +56,7 @@ const jsonLd = [
     <section>
       <SectionHead title="🔥 Największe obniżki" href="/okazje" />
       <ProductRow>
-        {top.map((p, i) => <div class="flex w-[46%] shrink-0 snap-start sm:w-[31%] md:w-[23.5%] lg:w-[19%]"><ProductCard product={p} pageType="glowna" eager={i < 4} /></div>)}
+        {top.map((p, i) => <div class="flex w-full md:w-[calc((100%-2rem)/3)] md:shrink-0 md:snap-start lg:w-[calc((100%-3rem)/4)]"><ProductCard product={p} pageType="glowna" eager={i < 4} /></div>)}
       </ProductRow>
     </section>
 
@@ -75,7 +75,7 @@ const jsonLd = [
       <section>
         <SectionHead title={`${c.icon} ${c.name}`} href={`/okazje?kategoria=${c.slug}`} />
         <ProductRow>
-          {c.items.map((p) => <div class="flex w-[46%] shrink-0 snap-start sm:w-[31%] md:w-[23.5%] lg:w-[19%]"><ProductCard product={p} pageType="glowna" /></div>)}
+          {c.items.map((p) => <div class="flex w-full md:w-[calc((100%-2rem)/3)] md:shrink-0 md:snap-start lg:w-[calc((100%-3rem)/4)]"><ProductCard product={p} pageType="glowna" /></div>)}
         </ProductRow>
       </section>
     ))}
