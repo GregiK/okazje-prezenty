@@ -170,6 +170,18 @@ export function normalizeVoucher(raw, now = new Date()) {
 }
 
 /** Typ produktu z nazwy — do rotacji różnorodnego wyboru (zegarki, biżuteria, plecaki, torebki…). */
+// Data najnowszego wpisu w historii cen feedu (null = brak historii, nie da się ocenić).
+export function feedLastUpdate(items) {
+  let max = 0;
+  for (const it of items) {
+    for (const h of Array.isArray(it?.previousPrice) ? it.previousPrice : []) {
+      const t = Date.parse(h?.createDate);
+      if (t > max) max = t;
+    }
+  }
+  return max ? new Date(max) : null;
+}
+
 export function productType(name) {
   const n = String(name).toLowerCase();
   const types = [

@@ -97,3 +97,9 @@ test('kod: po terminie odrzucony, kod bez spacji zachowany', () => {
 });
 
 test('slugify', () => assert.equal(slugify('Żółć & Cup'), 'zolc-i-cup'));
+
+test('feedLastUpdate: najnowszy wpis historii cen, null bez historii', async () => {
+  const { feedLastUpdate } = await import('./normalize.mjs');
+  assert.equal(feedLastUpdate([{ previousPrice: [{ createDate: '2025-01-01T00:00:00Z' }, { createDate: '2025-12-05T04:05:12Z' }] }, { previousPrice: [] }]).toISOString().slice(0, 10), '2025-12-05');
+  assert.equal(feedLastUpdate([{}, { previousPrice: null }]), null);
+});
