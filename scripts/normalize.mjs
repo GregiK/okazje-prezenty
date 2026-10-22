@@ -51,6 +51,7 @@ export function isHttpUrl(value) {
   return typeof value === 'string' && /^https?:\/\//i.test(value.trim());
 }
 
+const MAX_IMAGES = 8;
 const toArray = (v) => (Array.isArray(v) ? v : v == null ? [] : [v]);
 
 /** Dopasowuje kategorię serwisu na podstawie tekstu kategorii z API. */
@@ -72,7 +73,9 @@ export function normalizeProduct(raw, { excludedWords = [], programCategory = ''
   const price = parsePrice(raw.productPrice);
   if (!(price > 0)) return { reject: 'cena' };
   const images = toArray(raw.productImages?.productImagesUrl).filter(isHttpUrl);
-  const image = images[0] ?? (isHttpUrl(raw.productImages?.productThumbUrl) ? raw.productImages.productThumbUrl : null);
+  const gallery = [...new Set(images.map((u) => u.trim()))].slice(0, MAX_IMAGES);
+  if (!gallery.length && isHttpUrl(raw.productImages?.productThumbUrl)) gallery.push(raw.productImages.productThumbUrl.trim());
+  const image = gallery[0];
   if (!image) return { reject: 'zdjęcie' };
   if (!isHttpUrl(raw.productTrackingUrl)) return { reject: 'link' };
   if (!raw.productName || !String(raw.productName).trim()) return { reject: 'nazwa' };
@@ -106,6 +109,7 @@ export function normalizeProduct(raw, { excludedWords = [], programCategory = ''
       name: String(raw.productName).trim(),
       description: stripHtml(raw.productDescritption ?? raw.productDescription, 200),
       image,
+      images: gallery,
       brand: (raw.productBrand ?? '').trim() || null,
       programId: Number(raw.programId),
       price: round2(price),

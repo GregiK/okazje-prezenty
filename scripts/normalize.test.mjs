@@ -29,6 +29,14 @@ test('produkt: poprawny i stara cena z priceCut', () => {
   assert.equal(product.category, 'bizuteria');
 });
 
+test('produkt: galeria — duplikaty usuwane, max 8, pierwsze zdjęcie = image', () => {
+  const urls = Array.from({ length: 12 }, (_, i) => `https://img/${i % 10}.jpg`);
+  const { product } = normalizeProduct({ ...base, productImages: { productImagesUrl: urls } });
+  assert.equal(product.images.length, 8);
+  assert.equal(product.image, 'https://img/0.jpg');
+  assert.equal(new Set(product.images).size, product.images.length);
+});
+
 test('produkt: odrzucenia', () => {
   assert.equal(normalizeProduct({ ...base, productPrice: 0 }).reject, 'cena');
   assert.equal(normalizeProduct({ ...base, productImages: { productImagesUrl: [] } }).reject, 'zdjęcie');

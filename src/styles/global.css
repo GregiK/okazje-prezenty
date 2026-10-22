@@ -13,7 +13,8 @@
 }
 
 @layer base {
-  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; scrollbar-width: none; }
+  html::-webkit-scrollbar { display: none; }
   body { @apply bg-cream text-ink font-sans antialiased; }
   a, button { -webkit-tap-highlight-color: transparent; }
   :focus-visible { outline: 3px solid var(--color-gold); outline-offset: 2px; }
