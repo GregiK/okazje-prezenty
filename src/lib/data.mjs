@@ -78,3 +78,21 @@ export function pickHeroProducts(n = 3) {
   return out.slice(0, n);
 }
 export const heroProducts = pickHeroProducts();
+
+/** Adres strony produktu: czytelny slug + krótki fragment ID (unikalność). */
+export function productPath(p) {
+  const base = String(p.name)
+    .toLowerCase()
+    .replace(/ą/g, 'a').replace(/ć/g, 'c').replace(/ę/g, 'e').replace(/ł/g, 'l').replace(/ń/g, 'n')
+    .replace(/ó/g, 'o').replace(/ś/g, 's').replace(/ź|ż/g, 'z')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/g, '');
+  return `/produkt/${base || 'produkt'}-${p.id.slice(0, 8)}`;
+}
+
+/** Produkty powiązane: ta sama kategoria (najpierw obniżki), bez bieżącego, max n. */
+export function relatedProducts(p, n = 4) {
+  return products
+    .filter((x) => x.id !== p.id && x.category === p.category)
+    .sort((a, b) => (b.discount > 0) - (a.discount > 0) || Math.abs(a.price - p.price) - Math.abs(b.price - p.price))
+    .slice(0, n);
+}

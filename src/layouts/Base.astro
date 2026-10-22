@@ -2,10 +2,10 @@
 import '../styles/global.css';
 import { SITE_NAME, SITE_TAGLINE, AFFILIATE_NOTICE } from '../config/site.mjs';
 
-const { title, description, jsonLd = [], noindex = false, ogType = 'website' } = Astro.props;
+const { title, description, jsonLd = [], noindex = false, ogType = 'website', ogImage } = Astro.props;
 const fullTitle = title === SITE_NAME ? `${SITE_NAME} — ${SITE_TAGLINE}` : `${title} | ${SITE_NAME}`;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
-const ogImage = new URL('/og-image.png', Astro.site).toString();
+const ogImageUrl = ogImage ?? new URL('/og-image.png', Astro.site).toString();
 const nav = [
   { href: '/okazje', label: 'Okazje' },
   { href: '/kody-rabatowe', label: 'Kody rabatowe', short: 'Kody' },
@@ -32,9 +32,9 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={ogImage} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image" content={ogImageUrl} />
+    {!ogImage && <meta property="og:image:width" content="1200" />}
+    {!ogImage && <meta property="og:image:height" content="630" />}
     <meta name="twitter:card" content="summary_large_image" />
     {jsonLd.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}
   </head>

@@ -1,0 +1,109 @@
+---
+import Base from '../../layouts/Base.astro';
+import AffiliateNotice from '../../components/AffiliateNotice.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { products, shopById, categoryBySlug, formatPrice, formatDate, updatedDate, productPath, relatedProducts } from '../../lib/data.mjs';
+
+export function getStaticPaths() {
+  return products.map((p) => ({ params: { slug: productPath(p).replace('/produkt/', '') }, props: { p } }));
+}
+
+const { p } = Astro.props;
+const shop = shopById.get(p.programId);
+const cat = categoryBySlug.get(p.category);
+const images = p.images?.length ? p.images : [p.image];
+const related = relatedProducts(p, 4);
+const title = `${p.name} — ${shop?.name ?? 'sklep'}`;
+const description = `${p.name}: ${formatPrice(p.price)}${p.discount > 0 ? ` (−${p.discount}%, najniższa cena z 30 dni przed obniżką: ${formatPrice(p.oldPrice)})` : ''}. Sklep: ${shop?.name}. Cena z dnia ${updatedDate}.`;
+const pageUrl = new URL(productPath(p), Astro.site).toString();
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: p.name,
+    image: images,
+    ...(p.brand ? { brand: { '@type': 'Brand', name: p.brand } } : {}),
+    ...(p.description ? { description: p.description } : {}),
+    offers: { '@type': 'Offer', url: pageUrl, price: p.price.toFixed(2), priceCurrency: 'PLN', seller: { '@type': 'Organization', name: shop?.name ?? 'sklep' } }
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: new URL('/', Astro.site).toString() },
+      ...(shop ? [{ '@type': 'ListItem', position: 2, name: shop.name, item: new URL(`/sklep/${shop.slug}`, Astro.site).toString() }] : []),
+      { '@type': 'ListItem', position: shop ? 3 : 2, name: p.name, item: pageUrl }
+    ]
+  }
+];
+---
+<Base title={title} description={description} jsonLd={jsonLd} ogType="product" ogImage={images[0]}>
+  <div class="container-wide space-y-8 py-6">
+    <nav aria-label="Ścieżka" class="text-sm text-muted">
+      <a href="/" class="hover:text-berry">Strona główna</a>{' › '}
+      {shop && <><a href={`/sklep/${shop.slug}`} class="hover:text-berry">{shop.name}</a>{' › '}</>}
+      <span>{p.name}</span>
+    </nav>
+
+    <article class="grid gap-6 lg:grid-cols-2" data-name={p.name}>
+      <div class="relative aspect-square overflow-hidden rounded-2xl border border-line bg-white" data-gallery>
+        <div data-track class="flex h-full snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {images.map((src, i) => (
+            <button type="button" data-zoom={src} class="h-full w-full shrink-0 snap-center cursor-zoom-in" aria-label={`Powiększ zdjęcie ${i + 1} z ${images.length}`}>
+              <img src={src} alt={i === 0 ? p.name : ''} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" width="800" height="800" draggable="false" class="h-full w-full object-contain p-3" />
+            </button>
+          ))}
+        </div>
+        {p.discount > 0 && <span class="pointer-events-none absolute left-3 top-3 rounded-lg bg-berry px-3 py-1.5 text-base font-extrabold text-white shadow">-{p.discount}%</span>}
+        {images.length > 1 && (
+          <>
+            <button type="button" data-g="-1" aria-label="Poprzednie zdjęcie" class="absolute left-2 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl font-bold text-berry shadow hover:bg-white">‹</button>
+            <button type="button" data-g="1" aria-label="Następne zdjęcie" class="absolute right-2 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl font-bold text-berry shadow hover:bg-white">›</button>
+            <span data-counter class="pointer-events-none absolute bottom-3 right-3 rounded-full bg-ink/70 px-2.5 py-1 text-xs font-bold text-white">1/{images.length}</span>
+          </>
+        )}
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <p class="text-sm font-semibold uppercase tracking-wide text-muted">{shop?.name}{cat ? ` · ${cat.name}` : ''}</p>
+        <h1 class="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">{p.name}</h1>
+        {p.brand && <p class="text-muted">Marka: <strong class="text-ink">{p.brand}</strong></p>}
+        <div>
+          <p class="flex flex-wrap items-baseline gap-x-3">
+            <span class="text-4xl font-extrabold text-berry">{formatPrice(p.price)}</span>
+            {p.oldPrice && <s class="text-xl text-muted">{formatPrice(p.oldPrice)}</s>}
+          </p>
+          {p.oldPrice && <p class="mt-1 text-sm text-muted">Obniżka od {formatDate(p.dealSince)}. Najniższa cena z 30 dni przed obniżką: {formatPrice(p.oldPrice)}.</p>}
+          <p class="mt-1 text-sm text-muted">Cena z dnia {updatedDate} — może się zmienić; aktualną cenę i dostępność sprawdzisz w sklepie.</p>
+        </div>
+        <a id="cta" href={`/idz/${p.id}?z=produkt`} target="_blank" rel="sponsored nofollow noopener" class="btn btn-primary w-full text-lg sm:w-auto sm:min-w-72">Zobacz w sklepie {shop?.name}</a>
+        <AffiliateNotice />
+        {p.description && (
+          <section>
+            <h2 class="mb-1 text-xl font-extrabold">Opis</h2>
+            <p class="leading-relaxed text-muted">{p.description}</p>
+          </section>
+        )}
+        <p class="text-sm text-muted">Sprzedawcą jest {shop?.name}. {`Zakup, płatność, dostawa i reklamacje realizuje sklep.`}</p>
+      </div>
+    </article>
+
+    {related.length > 0 && (
+      <section>
+        <h2 class="section-title mb-4">Zobacz także</h2>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
+          {related.map((r) => <ProductCard product={r} pageType="produkt" />)}
+        </div>
+      </section>
+    )}
+  </div>
+
+  <script is:inline>
+    // Ruch z Facebooka (?z=fb): przekazujemy źródło do przejścia do sklepu, żeby sprzedaż trafiła do raportu jako FB.
+    (function () {
+      var z = new URLSearchParams(location.search).get('z');
+      var cta = document.getElementById('cta');
+      if (z === 'fb' && cta) cta.href = cta.getAttribute('href').replace('z=produkt', 'z=fb');
+    })();
+  </script>
+</Base>

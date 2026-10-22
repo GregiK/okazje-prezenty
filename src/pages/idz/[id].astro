@@ -60,12 +60,14 @@ const title = kind === 'product' ? item.name : item.title;
     </main>
 
     <script is:inline define:vars={{ dest }}>
-      // Znacznik źródła (param1=www, param2=<strona, z której kliknięto>) i natychmiastowe przekierowanie.
+      // Znacznik źródła: z=<strona serwisu> => param1=www, param2=<strona>; z=fb => param1=fb, param2=post (ruch z Facebooka).
       var q = new URLSearchParams(location.search).get('z');
-      var z = ['glowna', 'okazje', 'kody', 'sklep', 'prezenty'].indexOf(q) > -1 ? q : 'inne';
+      var p1 = 'www', p2 = 'inne';
+      if (q === 'fb') { p1 = 'fb'; p2 = 'post'; }
+      else if (['glowna', 'okazje', 'kody', 'sklep', 'prezenty', 'produkt'].indexOf(q) > -1) { p2 = q; }
       var u = new URL(dest);
-      u.searchParams.set('param1', 'www');
-      u.searchParams.set('param2', z);
+      u.searchParams.set('param1', p1);
+      u.searchParams.set('param2', p2);
       document.getElementById('go').href = u.toString();
       location.replace(u.toString());
     </script>

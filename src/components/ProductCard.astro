@@ -1,5 +1,5 @@
 ---
-import { shopById, formatPrice, updatedDate } from '../lib/data.mjs';
+import { shopById, formatPrice, updatedDate, productPath } from '../lib/data.mjs';
 
 const { product, pageType, eager = false } = Astro.props;
 const shop = shopById.get(product.programId);
@@ -31,7 +31,7 @@ const images = product.images?.length ? product.images : [product.image];
   <div class="flex flex-1 flex-col gap-2 p-3">
     <p class="text-xs font-semibold uppercase tracking-wide text-muted">{shop?.name}</p>
     <h3 class="line-clamp-3 text-lg font-extrabold leading-snug sm:text-xl">
-      <a href={href} target="_blank" rel="sponsored nofollow noopener">{product.name}</a>
+      <a href={productPath(product)} class="hover:text-berry">{product.name}</a>
     </h3>
     <div class="mt-auto">
       <p class="flex flex-wrap items-baseline gap-x-2">
