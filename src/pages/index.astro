@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import ProductCard from '../components/ProductCard.astro';
 import VoucherCard from '../components/VoucherCard.astro';
 import AffiliateNotice from '../components/AffiliateNotice.astro';
+import ProductRow from '../components/ProductRow.astro';
 import SectionHead from '../components/SectionHead.astro';
 import { products, productsByDiscount, vouchers, activeCategories, activeShops, updatedDate } from '../lib/data.mjs';
 import { productItemList } from '../lib/seo.mjs';
@@ -39,7 +40,7 @@ const jsonLd = [
     </div>
   </section>
 
-  <div class="container-x space-y-12 pt-6">
+  <div class="container-wide space-y-12 pt-6">
     <AffiliateNotice />
 
     {activeCategories.length > 0 && (
@@ -54,9 +55,9 @@ const jsonLd = [
 
     <section>
       <SectionHead title="🔥 Największe obniżki" href="/okazje" />
-      <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {top.map((p, i) => <ProductCard product={p} pageType="glowna" eager={i < 4} />)}
-      </div>
+      <ProductRow>
+        {top.map((p, i) => <div class="flex w-full md:w-[calc((100%-2rem)/3)] md:shrink-0 md:snap-start lg:w-[calc((100%-3rem)/4)]"><ProductCard product={p} pageType="glowna" eager={i < 4} /></div>)}
+      </ProductRow>
     </section>
 
     <section>
@@ -73,9 +74,9 @@ const jsonLd = [
     {sections.map((c) => (
       <section>
         <SectionHead title={`${c.icon} ${c.name}`} href={`/okazje?kategoria=${c.slug}`} />
-        <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-          {c.items.map((p) => <ProductCard product={p} pageType="glowna" />)}
-        </div>
+        <ProductRow>
+          {c.items.map((p) => <div class="flex w-full md:w-[calc((100%-2rem)/3)] md:shrink-0 md:snap-start lg:w-[calc((100%-3rem)/4)]"><ProductCard product={p} pageType="glowna" /></div>)}
+        </ProductRow>
       </section>
     ))}
 

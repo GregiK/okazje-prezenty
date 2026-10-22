@@ -16,6 +16,7 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 ## Architektura
 - `scripts/fetch-data.mjs` — pobiera `GetPrograms`, `GetHotPrice` (per program z konfiguracji), `GetVouchers`; normalizuje (`scripts/normalize.mjs`) i zapisuje do `src/data/*.json` (`products`, `vouchers`, `shops`, `meta`). `src/data/` jest w `.gitignore` (generowane).
   - Tryby: `WEBE_LOGIN`+`WEBE_PASSWORD` → Basic Auth (Actions); `WEBE_PROXY_AUTH=1` → bez nagłówka (sesje Claude w chmurze; proxy dokłada auth; skrypt sam ustawia `NODE_USE_ENV_PROXY=1`); brak env → `fixtures/`.
+  - `REQUIRE_LIVE=1` (ustawiane w CI) → brak danych logowania = błąd zamiast cichego użycia fixtures.
   - W trybie live pusty wynik = błąd (exit 1), żeby nie opublikować pustej strony.
   - `GetHotPrice` bez `programId` zwraca tylko ~2000 pozycji (dominują sklepy spoza konfiguracji) — dlatego zawsze pobieramy osobno dla każdego programu z konfiguracji.
 - `src/config/programs.json` — **lista sklepów do pokazania** (`programs`), kandydaci czekający na akceptację (`oczekujace`, nieużywani), słowa wykluczonych kategorii. Env `PROGRAM_IDS=1,2,3` nadpisuje listę (testy).

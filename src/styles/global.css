@@ -25,6 +25,7 @@
   }
   .btn-primary { @apply bg-berry text-white hover:bg-berry-dark active:bg-berry-dark; }
   .btn-light { @apply border-2 border-berry bg-white text-berry hover:bg-blush; }
+  .container-wide { @apply mx-auto w-full px-4 sm:px-6 lg:px-10; }
   .container-x { @apply mx-auto w-full max-w-6xl px-4; }
   .section-title { @apply text-2xl font-extrabold tracking-tight sm:text-3xl; }
 }

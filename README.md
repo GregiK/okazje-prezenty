@@ -44,6 +44,8 @@ Workflow `.github/workflows/deploy.yml` uruchamia się: codziennie o 04:15 UTC (
 
 **Sekrety repozytorium** (Settings → Secrets and variables → Actions): `WEBE_LOGIN`, `WEBE_PASSWORD`, `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`.
 
+**Brak sekretów webePartners:** workflow ustawia `REQUIRE_LIVE=1`, więc bez `WEBE_LOGIN`/`WEBE_PASSWORD` build kończy się błędem zamiast wdrożyć dane z fixtures.
+
 **Gdy API webePartners zawiedzie:** `fetch-data` kończy się błędem (exit 1), build pada i deploy się **nie wykonuje** — na serwerze zostaje poprzednia, działająca wersja strony. To celowe (nie publikujemy pustej strony). Wystarczy sprawdzić log w Actions i uruchomić ponownie.
 
 **Zmiana domeny:** w `.github/workflows/deploy.yml` zmień jedną zmienną `SITE_URL` (krok Build); domyślna wartość w `astro.config.mjs` też wskazuje na `https://okazje.automatklienta.pl`. Zadbaj, by konto FTP wskazywało katalog nowej domeny.
