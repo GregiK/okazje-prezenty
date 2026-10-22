@@ -6,7 +6,7 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 ## Etapy
 1. **ETAP 1 (zrobiony)** — projekt Astro + Tailwind, skrypt pobierania danych, fixtures, strony, SEO, README.
 2. **ETAP 2 (zrobiony)** — wdrożenie: `.github/workflows/deploy.yml` (cron 04:15 UTC, ręcznie, push na `main`) → test → build → FTPS (SamKirkland/FTP-Deploy-Action) do `public_html` subdomeny na DirectAdmin. Sekrety repo: `WEBE_LOGIN`, `WEBE_PASSWORD`, `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`. `SITE_URL` jest w workflow (jawnie, nie sekret).
-3. **ETAP 3 (zrobiony)** — uczciwe ceny (polityka Omnibus, patrz niżej), kolekcje prezentowe wg budżetu (`/prezenty/<slug>`, konfiguracja `COLLECTIONS` w `site.mjs`), przegląd nowo zaakceptowanych sklepów (Crong.com odrzucony tematycznie → `pominiete` w `programs.json`). Dalej: kolejne sklepy po akceptacji, poradniki/treści SEO.
+3. **ETAP 3 (zrobiony)** — uczciwe ceny (polityka Omnibus, patrz niżej), kolekcje prezentowe wg budżetu (`/prezenty/do-50-zl`, `50-200-zl`, `powyzej-200-zl`, rozłączne; konfiguracja `COLLECTIONS` w `site.mjs`; kolekcja z <3 produktami jest ukrywana), przegląd nowo zaakceptowanych sklepów (Crong.com odrzucony tematycznie → `pominiete` w `programs.json`). Dalej: kolejne sklepy po akceptacji, poradniki/treści SEO.
 
 ## Wdrożenie i adres
 - Adres strony: **https://okazje.automatklienta.pl** (domyślny `SITE_URL` w `astro.config.mjs` i w workflow).
@@ -23,10 +23,10 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 - `src/config/site.mjs` — nazwa serwisu, tekst informacji o linkach partnerskich, kategorie serwisu (dopasowanie po słowach kluczowych z API), `MAX_TRUSTED_CUT`.
 - `src/lib/data.mjs` — import danych, `trackedUrl()` (dokleja `param1=www&param2=<typ strony>`), formatowanie cen/dat.
 - Strony: `/`, `/okazje` (filtry/sortowanie po stronie klienta, ~40 linii JS inline, stan w URL: `?sklep=&kategoria=&sort=`), `/kody-rabatowe`, `/sklep/[program]`, `/o-serwisie`, `/polityka-prywatnosci`, `/404`, `robots.txt`, `sitemap.xml`.
-- `/api/okazje.json` — publiczny feed (produkty wg rabatu + kody, linki bez param1/param2) dla n8n: workflow „Okazje 02 — Posty z okazjami” dokleja `param1=fb` i publikuje na fanpage. Nie zmieniaj nazw pól bez aktualizacji tego workflow.
+- `/api/okazje.json` — publiczny feed (produkty wg rabatu + kody, linki bez param1/param2) dla n8n: workflow „Okazje 02 — Posty z okazjami” dokleja `param1=fb` i publikuje na fanpage (tekst posta: „Najniższa cena z 30 dni przed obniżką”, #reklama; wersja opublikowana w n8n musi być zgodna z roboczą — po zmianach zawsze `publish_workflow`). Nie zmieniaj nazw pól bez aktualizacji tego workflow.
 - Karta produktu (`ProductCard.astro`): galeria zdjęć (`product.images`, max 8; scroll-snap + strzałki + licznik) i lightbox (`<dialog>` w `Base.astro`); kliknięcie zdjęcia powiększa, do sklepu prowadzi nazwa i przycisk. Suwak pozycji strony po prawej (`#scrollrail` w `Base.astro`, natywny pasek ukryty w `global.css`). Strona główna: `ProductRow` (telefon: kolumna, desktop: jeden rząd).
 - **Przejście do sklepu:** karty produktów/kodów linkują do `/idz/<id>?z=<typ strony>` (`src/pages/idz/[id].astro`, noindex, `Disallow` w robots) — szybka, własna strona z logo sklepu i produktem, która od razu robi `location.replace` na link afiliacyjny z `param1=www&param2=<z>` (z whitelistą: glowna/okazje/kody/sklep, inaczej `inne`). Adres docelowy jest wbudowany w build (nie z parametru URL — brak open redirect). Feed `/api/okazje.json` nadal ma surowe linki afiliacyjne.
-- Kolekcje prezentowe: `/prezenty/do-50-zl`, `do-100-zl`, `do-200-zl`, `powyzej-200-zl` (tylko z ≥3 produktami; w sitemap). `/okazje` ma filtr „tylko z aktualną obniżką” (`?obnizka=1`).
+- Kolekcje prezentowe: `/prezenty/do-50-zl`, `50-200-zl`, `powyzej-200-zl` (tylko z ≥3 produktami; w sitemap). `/okazje` ma filtr „tylko z aktualną obniżką” (`?obnizka=1`).
 - Brak bazy, backendu, analityki i cookies.
 
 ## Fakty o API (sprawdzone na prawdziwych danych, 2026-10-21)
@@ -37,6 +37,7 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 - `voucherCode` bywa opisem („zapis do newslettera”), nie kodem — wtedy `code=null` i karta ma tylko „Przejdź do promocji”.
 
 ## Zasady
+- **Prawo konsumenckie / uczciwość:** (1) polityka cen Omnibus (patrz Fakty o API); (2) `programs.json` → `wykluczoneFrazy` (zamiennik/nalewane/inspirowane/odpowiednik w nazwie lub opisie) i `wykluczoneNazwy` (regex, np. numerowana linia „N° 126” Paryskie.pl) — odrzucamy zamienniki perfum i produkty o niejasnym opisie; (3) termin ważności kodu zawsze jako realna data z API; (4) oznaczenie reklamy/linków partnerskich w stopce, nad listami i w postach FB (#reklama); (5) **`OPERATOR` w `src/config/site.mjs` (dane wydawcy: nazwa, adres, NIP, e-mail) MUSI być uzupełniony przed publicznym startem** — do tego czasu strony „O serwisie” i „Polityka prywatności” pokazują komunikat, a build ostrzega `[OperatorInfo]`; (6) polityka prywatności opisuje zasoby zewnętrzne (obrazy z `image.weben1.com`).
 - Sekrety wyłącznie z env — nigdy w kodzie/commitach. Zmienna `SITE_URL` ustala domenę (canonical, OG, sitemap); zmiana domeny = jedna zmienna w `deploy.yml`.
 - Linki afiliacyjne (i linki do `/idz/`): `rel="sponsored nofollow noopener" target="_blank"`. Informacja o linkach partnerskich widoczna w stopce i nad listami; ceny z dopiskiem „cena z dnia <data aktualizacji>”.
 - Nie pokazujemy: erotyka, dla dziecka/zabawki/parenting.
@@ -45,4 +46,3 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 
 ## Do rozważenia (dalej)
 - Dodanie sklepów z `oczekujace` po akceptacji (Cocoa, Cup&You mają kody).
-- Tekst posta w n8n („wcześniej X wg sklepu”) warto zmienić na „najniższa cena z 30 dni przed obniżką” — zgodnie z polityką cen.
