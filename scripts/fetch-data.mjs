@@ -122,7 +122,7 @@ async function main() {
   for (const raw of rawProducts) {
     const pid = Number(raw.programId);
     if (!ids.has(pid)) continue;
-    const res = normalizeProduct(raw, { excludedWords: excluded });
+    const res = normalizeProduct(raw, { excludedWords: excluded, now });
     if (res.reject) {
       rejects[res.reject] = (rejects[res.reject] ?? 0) + 1;
       continue;

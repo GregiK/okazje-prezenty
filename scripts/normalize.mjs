@@ -1,5 +1,5 @@
 // Czyste funkcje normalizujące odpowiedzi API webePartners (bez I/O — łatwe do testowania).
-import { CATEGORIES, DEFAULT_CATEGORY, MAX_TRUSTED_CUT } from '../src/config/site.mjs';
+import { CATEGORIES, DEFAULT_CATEGORY, MAX_TRUSTED_CUT, DEAL_MAX_AGE_DAYS } from '../src/config/site.mjs';
 
 /** Odpowiedź może być tablicą albo obiektem z tablicą w polu data/items/result. */
 export function unwrapArray(payload) {
@@ -68,8 +68,39 @@ export function isExcluded(text, excludedWords) {
   return excludedWords.some((w) => haystack.includes(w.toLowerCase()));
 }
 
+
+const DAY = 864e5;
+
+/**
+ * Obniżka zgodna z duchem dyrektywy Omnibus. Cenę „przed obniżką” liczymy z historii cen, a nie z priceCut:
+ * - początek obecnej ceny = data ostatniego wpisu historii, który równa się cenie dziś,
+ * - cena odniesienia = najniższa cena z 30 dni przed tą datą (łącznie z ceną obowiązującą tuż przed zmianą),
+ * - pokazujemy obniżkę tylko gdy jest świeża (obecna cena obowiązuje nie dłużej niż DEAL_MAX_AGE_DAYS),
+ *   cena odniesienia jest wyższa od obecnej, a obniżka nie przekracza MAX_TRUSTED_CUT.
+ * Brak historii albo starsza „obniżka” => brak przekreślonej ceny i znaczka -X%.
+ */
+export function computeDeal(price, previousPrice, now = new Date()) {
+  const hist = toArray(previousPrice)
+    .map((x) => ({ t: Date.parse(x?.createDate), p: parsePrice(x?.price) }))
+    .filter((x) => Number.isFinite(x.t) && x.p > 0)
+    .sort((a, b) => a.t - b.t);
+  if (!hist.length) return null;
+  const last = hist[hist.length - 1];
+  if (Math.abs(last.p - price) > 0.005) return null; // historia nie kończy się na obecnej cenie
+  const since = last.t;
+  if (now.getTime() - since > DEAL_MAX_AGE_DAYS * DAY) return null;
+  const before = hist.filter((x) => x.t < since);
+  if (!before.length) return null;
+  const inWindow = before.filter((x) => x.t >= since - 30 * DAY).map((x) => x.p);
+  const reference = Math.min(before[before.length - 1].p, ...inWindow);
+  if (!(reference > price)) return null;
+  const discount = Math.round((1 - price / reference) * 100);
+  if (discount < 1 || discount > MAX_TRUSTED_CUT) return null;
+  return { reference: round2(reference), discount, since: new Date(since).toISOString() };
+}
+
 /** Zwraca znormalizowany produkt albo null (z powodem odrzucenia w drugim polu). */
-export function normalizeProduct(raw, { excludedWords = [], programCategory = '' } = {}) {
+export function normalizeProduct(raw, { excludedWords = [], programCategory = '', now = new Date() } = {}) {
   const price = parsePrice(raw.productPrice);
   if (!(price > 0)) return { reject: 'cena' };
   const images = toArray(raw.productImages?.productImagesUrl).filter(isHttpUrl);
@@ -84,24 +115,9 @@ export function normalizeProduct(raw, { excludedWords = [], programCategory = ''
   const catText = [...catNames, raw.shopCategoryName, raw.productName].join(' | ');
   if (isExcluded(catText, excludedWords)) return { reject: 'kategoria wykluczona' };
 
-  let cut = parsePrice(raw.priceCut);
-  let oldPrice = null;
-  if (cut > 0 && cut <= MAX_TRUSTED_CUT) {
-    oldPrice = round2(price / (1 - cut / 100));
-  } else {
-    // brak/niewiarygodny priceCut — spróbuj z historii cen (najwyższa cena wyższa od obecnej)
-    const prev = toArray(raw.previousPrice).map((p) => parsePrice(p?.price)).filter((p) => p > price);
-    cut = 0;
-    if (prev.length) {
-      const max = Math.max(...prev);
-      const derived = Math.round((1 - price / max) * 100);
-      if (derived > 0 && derived <= MAX_TRUSTED_CUT) {
-        oldPrice = round2(max);
-        cut = derived;
-      }
-    }
-  }
-  const discount = oldPrice ? Math.round(cut) : 0;
+  const deal = computeDeal(price, raw.previousPrice, now);
+  const oldPrice = deal ? deal.reference : null;
+  const discount = deal ? deal.discount : 0;
 
   return {
     product: {
@@ -115,6 +131,7 @@ export function normalizeProduct(raw, { excludedWords = [], programCategory = ''
       price: round2(price),
       oldPrice,
       discount,
+      dealSince: deal ? deal.since : null,
       category: matchCategory(catNames, raw.shopCategoryName, raw.productName, programCategory),
       url: raw.productTrackingUrl.trim()
     }

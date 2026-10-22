@@ -3,7 +3,7 @@ import products from '../data/products.json';
 import vouchers from '../data/vouchers.json';
 import shops from '../data/shops.json';
 import meta from '../data/meta.json';
-import { CATEGORIES } from '../config/site.mjs';
+import { CATEGORIES, COLLECTIONS } from '../config/site.mjs';
 
 export { products, vouchers, shops, meta };
 
@@ -44,3 +44,15 @@ export const activeCategories = CATEGORIES.map((c) => ({
   ...c,
   count: products.filter((p) => p.category === c.slug).length
 })).filter((c) => c.count > 0);
+
+/** Obniżki zgodne z polityką cen (świeże, z ceną odniesienia) — tylko te dostają znaczek -X%. */
+export const dealProducts = productsByDiscount.filter((p) => p.discount > 0);
+
+export function collectionProducts(c) {
+  return products
+    .filter((p) => (c.max == null || p.price <= c.max) && (c.min == null || p.price > c.min))
+    .sort((a, b) => b.discount - a.discount || a.price - b.price);
+}
+
+/** Kolekcje, które mają co najmniej 3 produkty. */
+export const activeCollections = COLLECTIONS.map((c) => ({ ...c, items: collectionProducts(c) })).filter((c) => c.items.length >= 3);
