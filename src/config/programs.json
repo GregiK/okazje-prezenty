@@ -117,6 +117,7 @@
       13730
     ]
   },
+  "maxWiekFeeduDni": 150,
   "maxProduktowNaSklep": 150,
   "idealnaCenaPrezentu": 150,
   "wykluczoneSlowaWNazwie": [

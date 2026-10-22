@@ -9,7 +9,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { pickPrograms } from './programs.mjs';
-import { capProducts, normalizeProduct, normalizeVoucher, unwrapArray, slugify, isHttpUrl, matchCategory } from './normalize.mjs';
+import { capProducts, normalizeProduct, normalizeVoucher, unwrapArray, slugify, isHttpUrl, matchCategory, feedLastUpdate } from './normalize.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const API = 'https://api2.webepartners.pl';
@@ -73,6 +73,7 @@ async function main() {
   const excludedNameRegex = config.wykluczoneNazwy ?? [];
   const excludedNameWords = config.wykluczoneSlowaWNazwie ?? [];
   const now = new Date();
+  const maxFeedAgeDays = config.maxWiekFeeduDni ?? 150;
   // --- GetPrograms
   const allPrograms = await load('GetPrograms', '/Wydawca/GetPrograms');
   const programById = new Map(allPrograms.map((p) => [Number(p.programId), p]));
@@ -99,6 +100,15 @@ async function main() {
       try {
         const part = unwrapArray(await api(`/Wydawca/GetHotPrice?programId=${id}`));
         log(`GetHotPrice programId=${id}: ${part.length}`);
+        // martwy feed (sklep przestał aktualizować ofertę → webePartners odsyła klienta na „sklep niedostępny”)
+        const last = feedLastUpdate(part);
+        if (last && now - last > maxFeedAgeDays * 864e5) {
+          const name = configured.find((p) => p.programId === id)?.name ?? String(id);
+          skipped.push({ programId: id, name, reason: `nieaktualny feed (ostatnia zmiana cen ${dateStr(last)})` });
+          log(`POMINIĘTO ${name} (${id}): nieaktualny feed (ostatnia zmiana cen ${dateStr(last)})`);
+          ids.delete(id);
+          continue;
+        }
         rawProducts.push(...part);
       } catch (e) {
         // 4xx = program bez feedu (np. zakończony) => traktujemy jak pusty; błąd sieci/serwera (5xx) przerywa build,
@@ -108,6 +118,8 @@ async function main() {
       }
     }
   }
+
+  configured = configured.filter((c) => ids.has(c.programId));
 
   // --- GetVouchers
   const from = new Date(now.getTime() - 365 * 864e5);
