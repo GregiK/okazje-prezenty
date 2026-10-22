@@ -46,5 +46,7 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 - Oszczędzaj kontekst: dużych odpowiedzi API nie czytaj w całości (`jq`/`head`).
 - Użytkownik prosi o dokończenie zadania do końca i potwierdzenie; zwracaj się do niego „Grzegorz”.
 
+- **Torebki-skórzane.pl (12354) wyłączony ręcznie** (`wykluczoneProgramy`, 2026-10-22): `relationId=4`, świeży feed, ale link śledzący kończy na `webep1.com/shopnotactive` („sklep niedostępny”) — status widać tylko po kliknięciu, API go nie zdradza. Przywrócić (usunąć z `wykluczoneProgramy`) po potwierdzeniu w panelu webePartners, że program jest aktywny.
+
 ## Do rozważenia (dalej)
 - Dodanie sklepów z `oczekujace` po akceptacji (Cocoa, Cup&You mają kody).
