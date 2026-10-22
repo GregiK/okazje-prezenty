@@ -68,6 +68,108 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
       </div>
     </footer>
 
+    <div id="scrollrail" aria-hidden="true" class="fixed bottom-3 right-0 top-16 z-40 hidden w-5 touch-none select-none">
+      <div class="absolute bottom-0 right-1 top-0 w-1.5 rounded-full bg-berry/15"></div>
+      <div id="scrollthumb" class="absolute right-0.5 w-2.5 cursor-grab rounded-full bg-berry shadow" style="height:48px;top:0"></div>
+    </div>
+
+    <dialog id="lightbox" class="m-0 h-full max-h-none w-full max-w-none bg-ink/90 p-0 backdrop:bg-ink/90" aria-label="Galeria zdjęć produktu">
+      <div class="flex h-full flex-col items-center justify-center gap-3 p-3">
+        <p id="lb-title" class="max-w-3xl text-center text-base font-bold text-white"></p>
+        <div class="relative flex min-h-0 w-full max-w-5xl flex-1 items-center justify-center">
+          <img id="lb-img" src="" alt="" class="max-h-full max-w-full rounded-lg bg-white object-contain" />
+          <button type="button" id="lb-prev" aria-label="Poprzednie zdjęcie" class="absolute left-0 grid h-12 w-12 place-items-center rounded-full bg-white/90 text-3xl font-bold text-berry">‹</button>
+          <button type="button" id="lb-next" aria-label="Następne zdjęcie" class="absolute right-0 grid h-12 w-12 place-items-center rounded-full bg-white/90 text-3xl font-bold text-berry">›</button>
+        </div>
+        <p id="lb-count" class="text-sm font-semibold text-white"></p>
+        <button type="button" id="lb-close" class="btn btn-primary">Zamknij</button>
+      </div>
+    </dialog>
+
+    <script is:inline>
+      // Galeria zdjęć w kartach produktów + powiększenie (bez bibliotek).
+      (function () {
+        var lb = document.getElementById('lightbox');
+        var img = document.getElementById('lb-img');
+        var list = [], idx = 0, title = '';
+        function show(i) {
+          idx = (i + list.length) % list.length;
+          img.src = list[idx];
+          img.alt = title;
+          document.getElementById('lb-count').textContent = list.length > 1 ? (idx + 1) + ' / ' + list.length : '';
+          document.getElementById('lb-prev').style.display = document.getElementById('lb-next').style.display = list.length > 1 ? '' : 'none';
+        }
+        function counter(g) {
+          var t = g.querySelector('[data-track]'), c = g.querySelector('[data-counter]');
+          if (!c) return;
+          c.textContent = (Math.round(t.scrollLeft / t.clientWidth) + 1) + '/' + t.children.length;
+        }
+        document.addEventListener('click', function (e) {
+          var arrow = e.target.closest('[data-g]');
+          if (arrow) {
+            var t = arrow.closest('[data-gallery]').querySelector('[data-track]');
+            t.scrollBy({ left: Number(arrow.getAttribute('data-g')) * t.clientWidth, behavior: 'smooth' });
+            return;
+          }
+          var z = e.target.closest('[data-zoom]');
+          if (z) {
+            var g = z.closest('[data-gallery]');
+            list = Array.prototype.map.call(g.querySelectorAll('[data-zoom]'), function (b) { return b.getAttribute('data-zoom'); });
+            title = g.closest('[data-name]').getAttribute('data-name') || '';
+            document.getElementById('lb-title').textContent = title;
+            show(list.indexOf(z.getAttribute('data-zoom')));
+            if (lb.showModal) lb.showModal(); else lb.setAttribute('open', '');
+          }
+        });
+        document.addEventListener('scroll', function (e) {
+          var t = e.target;
+          if (t && t.matches && t.matches('[data-track]')) counter(t.closest('[data-gallery]'));
+        }, true);
+        document.getElementById('lb-prev').addEventListener('click', function () { show(idx - 1); });
+        document.getElementById('lb-next').addEventListener('click', function () { show(idx + 1); });
+        document.getElementById('lb-close').addEventListener('click', function () { lb.close(); });
+        lb.addEventListener('click', function (e) { if (e.target === lb) lb.close(); });
+        lb.addEventListener('keydown', function (e) {
+          if (e.key === 'ArrowLeft') show(idx - 1);
+          if (e.key === 'ArrowRight') show(idx + 1);
+        });
+      })();
+
+      // Suwak strony po prawej: pokazuje (i pozwala przeciągnąć) pozycję na stronie.
+      (function () {
+        var rail = document.getElementById('scrollrail'), thumb = document.getElementById('scrollthumb');
+        var de = document.documentElement, drag = null;
+        function layout() {
+          var max = de.scrollHeight - de.clientHeight;
+          if (max < 80) { rail.classList.add('hidden'); return; }
+          rail.classList.remove('hidden');
+          var track = rail.clientHeight;
+          var h = Math.max(48, Math.round(track * de.clientHeight / de.scrollHeight));
+          thumb.style.height = h + 'px';
+          thumb.style.top = Math.round((track - h) * (window.scrollY / max)) + 'px';
+        }
+        function scrollToY(clientY, offset) {
+          var r = rail.getBoundingClientRect(), h = thumb.offsetHeight;
+          var ratio = Math.min(1, Math.max(0, (clientY - r.top - offset) / (r.height - h)));
+          window.scrollTo({ top: ratio * (de.scrollHeight - de.clientHeight), behavior: 'instant' });
+        }
+        rail.addEventListener('pointerdown', function (e) {
+          rail.setPointerCapture(e.pointerId);
+          var tr = thumb.getBoundingClientRect();
+          drag = e.target === thumb ? e.clientY - tr.top : thumb.offsetHeight / 2;
+          thumb.style.cursor = 'grabbing';
+          if (e.target !== thumb) scrollToY(e.clientY, drag);
+        });
+        rail.addEventListener('pointermove', function (e) { if (drag !== null) scrollToY(e.clientY, drag); });
+        rail.addEventListener('pointerup', function () { drag = null; thumb.style.cursor = 'grab'; });
+        window.addEventListener('scroll', layout, { passive: true });
+        window.addEventListener('resize', layout);
+        window.addEventListener('load', layout);
+        if (window.ResizeObserver) new ResizeObserver(layout).observe(document.body);
+        layout();
+      })();
+    </script>
+
     <script is:inline>
       // Kopiowanie kodu rabatowego (delegacja zdarzeń, bez bibliotek).
       document.addEventListener('click', async (e) => {

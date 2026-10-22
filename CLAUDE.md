@@ -24,6 +24,7 @@ Statyczny, szybki serwis afiliacyjny **„Okazje i Prezenty”** (okazje + kody 
 - `src/lib/data.mjs` — import danych, `trackedUrl()` (dokleja `param1=www&param2=<typ strony>`), formatowanie cen/dat.
 - Strony: `/`, `/okazje` (filtry/sortowanie po stronie klienta, ~40 linii JS inline, stan w URL: `?sklep=&kategoria=&sort=`), `/kody-rabatowe`, `/sklep/[program]`, `/o-serwisie`, `/polityka-prywatnosci`, `/404`, `robots.txt`, `sitemap.xml`.
 - `/api/okazje.json` — publiczny feed (produkty wg rabatu + kody, linki bez param1/param2) dla n8n: workflow „Okazje 02 — Posty z okazjami” dokleja `param1=fb` i publikuje na fanpage. Nie zmieniaj nazw pól bez aktualizacji tego workflow.
+- Karta produktu (`ProductCard.astro`): galeria zdjęć (`product.images`, max 8; scroll-snap + strzałki + licznik) i lightbox (`<dialog>` w `Base.astro`); kliknięcie zdjęcia powiększa, do sklepu prowadzi nazwa i przycisk. Suwak pozycji strony po prawej (`#scrollrail` w `Base.astro`, natywny pasek ukryty w `global.css`). Strona główna: `ProductRow` (telefon: kolumna, desktop: jeden rząd).
 - Brak bazy, backendu, analityki i cookies.
 
 ## Fakty o API (sprawdzone na prawdziwych danych, 2026-10-21)

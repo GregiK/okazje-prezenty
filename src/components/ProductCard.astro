@@ -1,24 +1,35 @@
 ---
 import { shopById, trackedUrl, formatPrice, updatedDate } from '../lib/data.mjs';
-import { categoryBySlug } from '../lib/data.mjs';
 
 const { product, pageType, eager = false } = Astro.props;
 const shop = shopById.get(product.programId);
 const href = trackedUrl(product.url, pageType);
-const cat = categoryBySlug.get(product.category);
+const images = product.images?.length ? product.images : [product.image];
 ---
 <article class="product-card flex w-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm"
-  data-shop={shop?.slug} data-category={product.category} data-price={product.price} data-discount={product.discount}>
-  <a href={href} target="_blank" rel="sponsored nofollow noopener" class="relative block aspect-square bg-white" tabindex="-1" aria-hidden="true">
-    <img src={product.image} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" width="400" height="400"
-      class="h-full w-full object-contain p-2" />
+  data-shop={shop?.slug} data-category={product.category} data-price={product.price} data-discount={product.discount} data-name={product.name}>
+  <div class="relative aspect-square bg-white" data-gallery>
+    <div data-track class="flex h-full snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {images.map((src, i) => (
+        <button type="button" data-zoom={src} class="h-full w-full shrink-0 snap-center cursor-zoom-in" aria-label={`Powiększ zdjęcie ${i + 1} z ${images.length}: ${product.name}`}>
+          <img src={src} alt={i === 0 ? product.name : ''} loading={eager && i === 0 ? 'eager' : 'lazy'} decoding="async" width="400" height="400" draggable="false" class="h-full w-full object-contain p-2" />
+        </button>
+      ))}
+    </div>
     {product.discount > 0 && (
-      <span class="absolute left-2 top-2 rounded-lg bg-berry px-2 py-1 text-sm font-extrabold text-white shadow">-{product.discount}%</span>
+      <span class="pointer-events-none absolute left-2 top-2 rounded-lg bg-berry px-2 py-1 text-sm font-extrabold text-white shadow">-{product.discount}%</span>
     )}
-  </a>
+    {images.length > 1 && (
+      <>
+        <button type="button" data-g="-1" aria-label="Poprzednie zdjęcie" class="absolute left-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl font-bold text-berry shadow hover:bg-white">‹</button>
+        <button type="button" data-g="1" aria-label="Następne zdjęcie" class="absolute right-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl font-bold text-berry shadow hover:bg-white">›</button>
+        <span data-counter class="pointer-events-none absolute bottom-2 right-2 rounded-full bg-ink/70 px-2 py-0.5 text-xs font-bold text-white">1/{images.length}</span>
+      </>
+    )}
+  </div>
   <div class="flex flex-1 flex-col gap-2 p-3">
     <p class="text-xs font-semibold uppercase tracking-wide text-muted">{shop?.name}</p>
-    <h3 class="line-clamp-3 text-sm font-bold leading-snug sm:text-base">
+    <h3 class="line-clamp-3 text-lg font-extrabold leading-snug sm:text-xl">
       <a href={href} target="_blank" rel="sponsored nofollow noopener">{product.name}</a>
     </h3>
     <div class="mt-auto">
