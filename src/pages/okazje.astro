@@ -8,7 +8,7 @@ import { productItemList } from '../lib/seo.mjs';
 const description = `Wszystkie okazje w jednym miejscu: ${productsByDiscount.length} produktów w obniżonych cenach. Filtruj po sklepie i kategorii, sortuj po wysokości rabatu lub cenie.`;
 ---
 <Base title="Okazje i promocje na prezenty" description={description} jsonLd={[productItemList(productsByDiscount.slice(0, 24), 'Okazje')]}>
-  <div class="container-x space-y-5 py-6">
+  <div class="container-wide space-y-5 py-6">
     <header>
       <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Okazje</h1>
       <p class="mt-1 text-muted">Ceny z dnia {updatedDate}. Przed zakupem sprawdź aktualną cenę w sklepie.</p>

@@ -18,7 +18,7 @@ const jsonLd = [
 const others = activeCollections.filter((x) => x.slug !== c.slug);
 ---
 <Base title={`${c.name} — pomysły na prezent`} description={description} jsonLd={jsonLd}>
-  <div class="container-x space-y-5 py-6">
+  <div class="container-wide space-y-5 py-6">
     <header>
       <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">{c.icon} {c.name}</h1>
       <p class="mt-1 text-muted">{c.blurb} Ceny z dnia {updatedDate}.</p>
