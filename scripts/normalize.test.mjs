@@ -60,6 +60,13 @@ test('produkt: zamienniki i numerowana linia „N° 123” są wykluczane', () =
   assert.ok(normalizeProduct(base, opts).product);
 });
 
+test('produkt: słowa wykluczone w nazwie (odzież, obuwie, dla dzieci)', () => {
+  const opts = { excludedNameWords: ['koszulk', 'wózk', 'buty'], now: NOW };
+  assert.match(normalizeProduct({ ...base, productName: 'TOMMY KOSZULKA MĘSKA' }, opts).reject, /słowo wykluczone/);
+  assert.match(normalizeProduct({ ...base, productName: 'Plecak damski-torba do wózka' }, opts).reject, /słowo wykluczone/);
+  assert.ok(normalizeProduct({ ...base, productName: 'Zegarek męski Casio' }, opts).product);
+});
+
 test('produkt: galeria — duplikaty usuwane, max 8, pierwsze zdjęcie = image', () => {
   const urls = Array.from({ length: 12 }, (_, i) => `https://img/${i % 10}.jpg`);
   const { product } = normalizeProduct({ ...base, productImages: { productImagesUrl: urls } });

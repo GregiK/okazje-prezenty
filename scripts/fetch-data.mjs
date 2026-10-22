@@ -8,7 +8,8 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { normalizeProduct, normalizeVoucher, unwrapArray, slugify, isHttpUrl, matchCategory } from './normalize.mjs';
+import { pickPrograms } from './programs.mjs';
+import { capProducts, normalizeProduct, normalizeVoucher, unwrapArray, slugify, isHttpUrl, matchCategory } from './normalize.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const API = 'https://api2.webepartners.pl';
@@ -43,15 +44,18 @@ async function api(pathAndQuery) {
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const res = await fetch(API + pathAndQuery, { headers, signal: AbortSignal.timeout(120_000) });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) { const err = new Error(`HTTP ${res.status}`); err.status = res.status; throw err; }
       const text = await res.text();
       return text.trim() ? JSON.parse(text) : [];
     } catch (e) {
       lastErr = e;
+      if (e.status >= 400 && e.status < 500) break; // błąd klienta (np. brak programu) — nie ponawiamy
       if (attempt < 3) await new Promise((r) => setTimeout(r, 2000 * attempt));
     }
   }
-  throw new Error(`${pathAndQuery}: ${lastErr.message}`);
+  const fail = new Error(`${pathAndQuery}: ${lastErr.message}`);
+  fail.status = lastErr.status;
+  throw fail;
 }
 
 const dateStr = (d) => d.toISOString().slice(0, 10);
@@ -64,19 +68,26 @@ async function load(name, livePath) {
 async function main() {
   const config = await readJson(path.join(ROOT, 'src/config/programs.json'));
   const envIds = process.env.PROGRAM_IDS?.split(',').map((s) => Number(s.trim())).filter(Boolean);
-  const configured = envIds
-    ? envIds.map((id) => config.programs.concat(config.oczekujace ?? []).find((p) => p.programId === id) ?? { programId: id, name: String(id) })
-    : config.programs;
-  const ids = new Set(configured.map((p) => p.programId));
   const excluded = config.wykluczoneKategorie ?? [];
   const excludedPhrases = config.wykluczoneFrazy ?? [];
   const excludedNameRegex = config.wykluczoneNazwy ?? [];
+  const excludedNameWords = config.wykluczoneSlowaWNazwie ?? [];
   const now = new Date();
-  log(`tryb: ${mode}, programów w konfiguracji: ${ids.size}`);
-
   // --- GetPrograms
   const allPrograms = await load('GetPrograms', '/Wydawca/GetPrograms');
   const programById = new Map(allPrograms.map((p) => [Number(p.programId), p]));
+
+  // --- dobór sklepów: ręczne (tylko zaakceptowane) + automatycznie wykryte nowe
+  let configured, skipped = [], added = [];
+  if (envIds) { // tryb testowy: dokładnie wskazane ID, bez kontroli statusu i bez auto
+    configured = envIds.map((id) => config.programs.concat(config.oczekujace ?? []).find((p) => p.programId === id) ?? { programId: id, name: String(id) });
+  } else {
+    ({ configured, skipped, added } = pickPrograms(config, allPrograms, { auto: mode !== 'fixtures' }));
+  }
+  const ids = new Set(configured.map((p) => p.programId));
+  log(`tryb: ${mode}, sklepów do pobrania: ${ids.size} (automatycznie dodane: ${added.length}, pominięte: ${skipped.length})`);
+  skipped.forEach((x) => log(`POMINIĘTO ${x.name} (${x.programId}): ${x.reason}`));
+  added.forEach((x) => log(`NOWY SKLEP (auto) ${x.name} (${x.programId})`));
 
   // --- GetHotPrice: bez programId zwraca tylko pierwsze ~2000 pozycji (dominują sklepy spoza konfiguracji),
   // dlatego dla każdego programu z konfiguracji pobieramy osobno.
@@ -90,7 +101,10 @@ async function main() {
         log(`GetHotPrice programId=${id}: ${part.length}`);
         rawProducts.push(...part);
       } catch (e) {
-        log(`UWAGA GetHotPrice programId=${id}: ${e.message}`);
+        // 4xx = program bez feedu (np. zakończony) => traktujemy jak pusty; błąd sieci/serwera (5xx) przerywa build,
+        // żeby nie opublikować niepełnej oferty — na serwerze zostaje wczorajsza wersja.
+        if (e.status >= 400 && e.status < 500) log(`GetHotPrice programId=${id}: ${e.message} — pomijam program`);
+        else throw new Error(`GetHotPrice programId=${id}: ${e.message}`);
       }
     }
   }
@@ -112,7 +126,8 @@ async function main() {
       logo: [p?.programLogoUrl, sample?.programLogoUrl].find(isHttpUrl) ?? null,
       url: isHttpUrl(p?.programUrl) ? p.programUrl : null,
       accepted: p ? p.relationId === 4 : null,
-      category: matchCategory(p?.categoryName ?? '')
+      category: matchCategory(p?.categoryName ?? ''),
+      auto: c.auto === true
     };
   });
   const shopById = new Map(shops.map((s) => [s.programId, s]));
@@ -124,7 +139,7 @@ async function main() {
   for (const raw of rawProducts) {
     const pid = Number(raw.programId);
     if (!ids.has(pid)) continue;
-    const res = normalizeProduct(raw, { excludedWords: excluded, excludedPhrases, excludedNameRegex, now });
+    const res = normalizeProduct(raw, { excludedWords: excluded, excludedPhrases, excludedNameRegex, excludedNameWords, now });
     if (res.reject) {
       rejects[res.reject] = (rejects[res.reject] ?? 0) + 1;
       continue;
@@ -133,6 +148,17 @@ async function main() {
     seen.add(res.product.id);
     products.push(res.product);
   }
+  // limit produktów na sklep (duże feedy, np. 2000 pozycji, przycinamy do różnorodnego wyboru)
+  const cap = config.maxProduktowNaSklep ?? 150;
+  const capped = [];
+  for (const sh of shops) {
+    const mine = products.filter((p) => p.programId === sh.programId);
+    const kept = capProducts(mine, cap, { targetPrice: config.idealnaCenaPrezentu ?? 150 });
+    if (kept.length < mine.length) log(`${sh.name}: ${mine.length} produktów → limit ${kept.length}`);
+    capped.push(...kept);
+  }
+  products.length = 0;
+  products.push(...capped);
   products.sort((a, b) => b.discount - a.discount || a.price - b.price);
 
   // --- kody
@@ -152,10 +178,20 @@ async function main() {
   }
   vouchers.sort((a, b) => (a.validTo ?? '9') .localeCompare(b.validTo ?? '9'));
 
+  const perShop = shops.map((sh) => ({
+    programId: sh.programId,
+    name: sh.name,
+    auto: sh.auto,
+    products: products.filter((p) => p.programId === sh.programId).length,
+    vouchers: vouchers.filter((v) => v.programId === sh.programId).length
+  }));
   const meta = {
     updatedAt: now.toISOString(),
     mode,
     counts: { shops: shops.length, products: products.length, vouchers: vouchers.length },
+    perShop,
+    added: added.map((x) => x.name),
+    skipped,
     rejected: { products: rejects, vouchers: vReject }
   };
 
@@ -168,6 +204,16 @@ async function main() {
   ]);
   log(`zapisano: ${products.length} produktów, ${vouchers.length} kodów, ${shops.length} sklepów`);
   log('odrzucone:', JSON.stringify(meta.rejected));
+  // Podsumowanie oferty w logu GitHub Actions (zakładka Summary przebiegu).
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    const { appendFile } = await import('node:fs/promises');
+    const rows = perShop.map((x) => `| ${x.name}${x.auto ? ' 🆕 (auto)' : ''} | ${x.products} | ${x.vouchers} |`).join('\n');
+    const extra = [
+      added.length ? `**Nowe sklepy dodane automatycznie:** ${added.map((x) => x.name).join(', ')}` : '',
+      skipped.length ? `**Pominięte programy:** ${skipped.map((x) => `${x.name} (${x.reason})`).join('; ')}` : ''
+    ].filter(Boolean).join('\n\n');
+    await appendFile(process.env.GITHUB_STEP_SUMMARY, `## Oferta serwisu\n\n| Sklep | Produkty | Kody |\n|---|---|---|\n${rows}\n\nRazem: ${products.length} produktów, ${vouchers.length} kodów.\n\n${extra}\n`);
+  }
   if (mode !== 'fixtures' && products.length === 0 && vouchers.length === 0) {
     throw new Error('API zwróciło puste dane — przerywam, aby nie opublikować pustej strony');
   }

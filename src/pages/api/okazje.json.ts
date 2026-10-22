@@ -9,6 +9,7 @@ export function GET({ site }: { site: URL }) {
     site: SITE_NAME,
     siteUrl: new URL('/', site).toString(),
     updatedAt: meta.updatedAt,
+    shops: (meta.perShop ?? []).map((x) => ({ programId: x.programId, name: x.name, products: x.products, vouchers: x.vouchers, auto: !!x.auto })),
     products: productsByDiscount.map((p) => ({
       id: p.id,
       name: p.name,
