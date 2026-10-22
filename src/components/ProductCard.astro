@@ -1,9 +1,10 @@
 ---
-import { shopById, trackedUrl, formatPrice, updatedDate } from '../lib/data.mjs';
+import { shopById, formatPrice, updatedDate } from '../lib/data.mjs';
 
 const { product, pageType, eager = false } = Astro.props;
 const shop = shopById.get(product.programId);
-const href = trackedUrl(product.url, pageType);
+// Przez stronę przejścia /idz/ — szybki, ładny ekran zamiast pustej strony pośredniej.
+const href = `/idz/${product.id}?z=${pageType}`;
 const images = product.images?.length ? product.images : [product.image];
 ---
 <article class="product-card flex w-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm"

@@ -1,9 +1,9 @@
 ---
-import { shopById, trackedUrl, validityLabel } from '../lib/data.mjs';
+import { shopById, validityLabel } from '../lib/data.mjs';
 
 const { voucher, pageType } = Astro.props;
 const shop = shopById.get(voucher.programId);
-const href = trackedUrl(voucher.url, pageType);
+const href = `/idz/${voucher.id}?z=${pageType}`;
 ---
 <article class="flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 shadow-sm">
   <div class="flex items-center gap-3">
