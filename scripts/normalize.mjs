@@ -100,7 +100,7 @@ export function computeDeal(price, previousPrice, now = new Date()) {
 }
 
 /** Zwraca znormalizowany produkt albo null (z powodem odrzucenia w drugim polu). */
-export function normalizeProduct(raw, { excludedWords = [], excludedPhrases = [], excludedNameRegex = [], programCategory = '', now = new Date() } = {}) {
+export function normalizeProduct(raw, { excludedWords = [], excludedPhrases = [], excludedNameRegex = [], excludedNameWords = [], programCategory = '', now = new Date() } = {}) {
   const price = parsePrice(raw.productPrice);
   if (!(price > 0)) return { reject: 'cena' };
   const images = toArray(raw.productImages?.productImagesUrl).filter(isHttpUrl);
@@ -116,6 +116,7 @@ export function normalizeProduct(raw, { excludedWords = [], excludedPhrases = []
   if (isExcluded(catText, excludedWords)) return { reject: 'kategoria wykluczona' };
   const fullText = `${raw.productName} ${raw.productDescritption ?? raw.productDescription ?? ''}`;
   if (isExcluded(fullText, excludedPhrases)) return { reject: 'fraza wykluczona (np. zamiennik)' };
+  if (isExcluded(raw.productName, excludedNameWords)) return { reject: 'słowo wykluczone w nazwie (odzież/obuwie/dla dzieci)' };
   if (excludedNameRegex.some((re) => new RegExp(re, 'i').test(String(raw.productName).trim()))) return { reject: 'nazwa wykluczona' };
 
   const deal = computeDeal(price, raw.previousPrice, now);
@@ -166,4 +167,50 @@ export function normalizeVoucher(raw, now = new Date()) {
       category: matchCategory(raw.categoryName, raw.voucherName)
     }
   };
+}
+
+/** Typ produktu z nazwy — do rotacji różnorodnego wyboru (zegarki, biżuteria, plecaki, torebki…). */
+export function productType(name) {
+  const n = String(name).toLowerCase();
+  const types = [
+    ['zegarek', /zegar/], ['bizuteria', /biżuter|bransolet|naszyjnik|wisior|kolczyk|pierścion|zawieszk|łańcuszek|broszk/],
+    ['zestaw', /zestaw|prezentow/], ['plecak', /plecak/], ['portfel', /portfel|portmonet|etui na karty/],
+    ['torebka', /torebk|listonoszk|shopper|kuferek|kopertówk|saszetk|nerka/], ['torba', /torba|walizk|worek/],
+    ['okulary', /okular|oprawk/], ['pasek', /pasek|paski/], ['perfumy', /perfum|woda toaletowa|woda perfumowana/],
+    ['kosmetyki', /krem|balsam|serum|maska|szampon|olejek/], ['herbata', /herbat|kawa|czekolad/], ['brelok', /brelok|zawieszk/]
+  ];
+  return (types.find(([, re]) => re.test(n)) ?? ['inne'])[0];
+}
+
+/**
+ * Przycina listę produktów jednego sklepu do `cap` pozycji tak, by oferta była różnorodna:
+ * 1) wszystkie produkty z weryfikowaną obniżką (od największej),
+ * 2) potem produkty bez obniżki — po kolei z różnych TYPÓW (zegarki, biżuteria, plecaki…; w jednym typie max
+ *    `perFamily` z tej samej „rodziny” nazw), w kolejności zbliżonej do typowej ceny prezentu (`targetPrice`).
+ */
+export function capProducts(list, cap = 150, { perFamily = 3, targetPrice = 150 } = {}) {
+  if (list.length <= cap) return list;
+  const family = (p) => p.name.toLowerCase().split(/\s+/).slice(0, 2).join(' ');
+  const out = list.filter((p) => p.discount > 0).sort((a, b) => b.discount - a.discount || a.price - b.price).slice(0, cap);
+  if (out.length >= cap) return out;
+  const rest = list.filter((p) => !(p.discount > 0)).sort((a, b) => Math.abs(a.price - targetPrice) - Math.abs(b.price - targetPrice) || a.name.localeCompare(b.name, 'pl'));
+  const buckets = new Map();
+  const famCount = new Map();
+  for (const p of rest) {
+    const t = productType(p.name);
+    const fk = t + '|' + family(p);
+    if ((famCount.get(fk) ?? 0) >= perFamily) continue;
+    famCount.set(fk, (famCount.get(fk) ?? 0) + 1);
+    if (!buckets.has(t)) buckets.set(t, []);
+    buckets.get(t).push(p);
+  }
+  const lists = [...buckets.values()];
+  for (let round = 0; out.length < cap; round++) {
+    let any = false;
+    for (const g of lists) {
+      if (g[round] && out.length < cap) { out.push(g[round]); any = true; }
+    }
+    if (!any) break;
+  }
+  return out;
 }
