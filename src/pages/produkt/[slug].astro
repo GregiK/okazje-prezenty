@@ -1,6 +1,5 @@
 ---
 import Base from '../../layouts/Base.astro';
-import AffiliateNotice from '../../components/AffiliateNotice.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import { products, shopById, categoryBySlug, formatPrice, formatDate, updatedDate, productPath, relatedProducts } from '../../lib/data.mjs';
 
@@ -77,7 +76,6 @@ const jsonLd = [
           <p class="mt-1 text-sm text-muted">Cena z dnia {updatedDate} — może się zmienić; aktualną cenę i dostępność sprawdzisz w sklepie.</p>
         </div>
         <a id="cta" href={`/idz/${p.id}?z=produkt`} target="_blank" rel="sponsored nofollow noopener" class="btn btn-primary w-full text-lg sm:w-auto sm:min-w-72">Zobacz w sklepie {shop?.name}</a>
-        <AffiliateNotice />
         {p.description && (
           <section>
             <h2 class="mb-1 text-xl font-extrabold">Opis</h2>

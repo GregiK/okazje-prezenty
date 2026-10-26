@@ -7,7 +7,7 @@ const fullTitle = title === SITE_NAME ? `${SITE_NAME} — ${SITE_TAGLINE}` : `${
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const ogImageUrl = ogImage ?? new URL('/og-image.png', Astro.site).toString();
 const nav = [
-  { href: '/okazje', label: 'Okazje' },
+  { href: '/okazje', label: 'Okazje dla każdego', short: 'Okazje' },
   { href: '/kody-rabatowe', label: 'Kody rabatowe', short: 'Kody' },
   { href: '/o-serwisie', label: 'O serwisie' }
 ];
@@ -59,7 +59,7 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 
     <footer class="mt-16 border-t border-line bg-white">
       <div class="container-wide space-y-4 py-8 text-sm text-muted">
-        <p class="rounded-xl bg-blush p-4 font-medium text-ink">{AFFILIATE_NOTICE}</p>
+        <p class="text-xs">{AFFILIATE_NOTICE} <a href="/o-serwisie" class="underline hover:text-berry">Zasady serwisu</a></p>
         <nav aria-label="Stopka" class="flex flex-wrap gap-x-5 gap-y-2 font-semibold text-ink">
           <a href="/okazje" class="hover:text-berry">Okazje</a>
           <a href="/kody-rabatowe" class="hover:text-berry">Kody rabatowe</a>

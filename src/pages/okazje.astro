@@ -1,7 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
 import ProductCard from '../components/ProductCard.astro';
-import AffiliateNotice from '../components/AffiliateNotice.astro';
 import { productsByDiscount, activeShops, activeCategories, updatedDate } from '../lib/data.mjs';
 import { productItemList } from '../lib/seo.mjs';
 
@@ -13,7 +12,6 @@ const description = `Wszystkie okazje w jednym miejscu: ${productsByDiscount.len
       <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Okazje</h1>
       <p class="mt-1 text-muted">Ceny z dnia {updatedDate}. Przed zakupem sprawdź aktualną cenę w sklepie.</p>
     </header>
-    <AffiliateNotice />
 
     <form id="filters" class="grid gap-3 rounded-2xl border border-line bg-white p-4 shadow-sm sm:grid-cols-3" onsubmit="return false">
       <label class="block text-sm font-bold">Sklep

@@ -1,9 +1,9 @@
 ---
-// Telefon: jedna kolumna (karty jedna pod drugą). Komputer (md+): jeden rząd na całą szerokość,
-// przewijany poziomo (scroll-snap) z przyciskami ‹ ›.
+// Jeden rząd produktów przewijany poziomo (scroll-snap) na każdym ekranie.
+// Telefon: przesuwanie palcem, widać kawałek następnej karty. Komputer (md+): dodatkowo przyciski ‹ ›.
 ---
 <div class="product-row relative">
-  <div data-row class="flex flex-col gap-4 md:snap-x md:snap-mandatory md:flex-row md:overflow-x-auto md:scroll-smooth md:py-1 md:pb-3 md:[scrollbar-width:thin]">
+  <div data-row class="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto scroll-smooth px-4 py-1 pb-3 [scrollbar-width:thin] sm:-mx-6 sm:scroll-px-6 sm:px-6 md:mx-0 md:scroll-px-0 md:px-0">
     <slot />
   </div>
   <button type="button" data-dir="-1" aria-label="Poprzednie produkty"

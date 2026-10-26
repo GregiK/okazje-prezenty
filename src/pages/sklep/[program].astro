@@ -2,7 +2,6 @@
 import Base from '../../layouts/Base.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import VoucherCard from '../../components/VoucherCard.astro';
-import AffiliateNotice from '../../components/AffiliateNotice.astro';
 import SectionHead from '../../components/SectionHead.astro';
 import { products, vouchers, activeShops, updatedDate } from '../../lib/data.mjs';
 import { productItemList, breadcrumbs } from '../../lib/seo.mjs';
@@ -34,7 +33,6 @@ const jsonLd = [
         <p class="text-muted">Okazje i kody rabatowe · ceny z dnia {updatedDate}</p>
       </div>
     </header>
-    <AffiliateNotice />
 
     {codes.length > 0 && (
       <section>

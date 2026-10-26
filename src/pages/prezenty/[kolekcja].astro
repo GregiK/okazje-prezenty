@@ -1,7 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import AffiliateNotice from '../../components/AffiliateNotice.astro';
 import { activeCollections, updatedDate } from '../../lib/data.mjs';
 import { productItemList, breadcrumbs } from '../../lib/seo.mjs';
 
@@ -23,7 +22,6 @@ const others = activeCollections.filter((x) => x.slug !== c.slug);
       <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">{c.icon} {c.name}</h1>
       <p class="mt-1 text-muted">{c.blurb} Ceny z dnia {updatedDate}.</p>
     </header>
-    <AffiliateNotice />
     <div class="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
       {c.items.map((p, i) => <ProductCard product={p} pageType="prezenty" eager={i < 4} />)}
     </div>

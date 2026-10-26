@@ -2,7 +2,6 @@
 import Base from '../layouts/Base.astro';
 import ProductCard from '../components/ProductCard.astro';
 import VoucherCard from '../components/VoucherCard.astro';
-import AffiliateNotice from '../components/AffiliateNotice.astro';
 import ProductRow from '../components/ProductRow.astro';
 import SectionHead from '../components/SectionHead.astro';
 import { products, productsByDiscount, dealProducts, heroProducts, vouchers, activeCategories, activeCollections, activeShops, updatedDate } from '../lib/data.mjs';
@@ -43,10 +42,10 @@ const jsonLd = [
     <div class="container-wide pb-10 pt-40 text-center sm:py-16 lg:py-24">
       <div class="mx-auto max-w-3xl rounded-3xl bg-cream/85 px-4 py-6 shadow-sm backdrop-blur-sm sm:px-8 sm:py-8">
         <p class="mb-3 inline-block rounded-full bg-white px-4 py-1 text-sm font-bold text-berry shadow-sm">🎁 Aktualizacja: {updatedDate}</p>
-        <h1 class="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">Okazje i pomysły na prezent</h1>
+        <h1 class="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">Okazje dla każdego i pomysły na prezent</h1>
         <p class="mx-auto mt-4 max-w-2xl text-lg text-muted">Największe obniżki i aktualne kody rabatowe z wybranych sklepów — biżuteria, perfumy, gadżety i prezenty dla bliskich.</p>
         <div class="mx-auto mt-6 flex max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center">
-          <a href="/okazje" class="btn btn-primary sm:min-w-52">Zobacz okazje</a>
+          <a href="/okazje" class="btn btn-primary sm:min-w-52">Okazje dla każdego</a>
           <a href="/kody-rabatowe" class="btn btn-light sm:min-w-52">Kody rabatowe</a>
         </div>
       </div>
@@ -54,8 +53,6 @@ const jsonLd = [
   </section>
 
   <div class="container-wide space-y-12 pt-6">
-    <AffiliateNotice />
-
     {activeCategories.length > 0 && (
       <nav aria-label="Kategorie" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
         {activeCategories.map((c) => (
@@ -71,14 +68,14 @@ const jsonLd = [
         <SectionHead title="🔥 Największe obniżki" href="/okazje?obnizka=1" />
         <p class="-mt-2 mb-4 text-sm text-muted">Tylko obniżki z ostatnich 30 dni. „Przed obniżką” to najniższa cena z 30 dni przed obniżką.</p>
         <ProductRow>
-          {top.map((p, i) => <div class="flex w-full md:w-[calc((100%-2rem)/3)] md:shrink-0 md:snap-start lg:w-[calc((100%-3rem)/4)]"><ProductCard product={p} pageType="glowna" eager={i < 4} /></div>)}
+          {top.map((p, i) => <div class="flex w-[78%] shrink-0 snap-start sm:w-[calc((100%-1rem)/2)] md:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-3rem)/4)]"><ProductCard product={p} pageType="glowna" eager={i < 4} /></div>)}
         </ProductRow>
       </section>
     ) : (
       <section>
         <SectionHead title="🎁 Polecane produkty" href="/okazje" />
         <ProductRow>
-          {featured.map((p, i) => <div class="flex w-full md:w-[calc((100%-2rem)/3)] md:shrink-0 md:snap-start lg:w-[calc((100%-3rem)/4)]"><ProductCard product={p} pageType="glowna" eager={i < 4} /></div>)}
+          {featured.map((p, i) => <div class="flex w-[78%] shrink-0 snap-start sm:w-[calc((100%-1rem)/2)] md:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-3rem)/4)]"><ProductCard product={p} pageType="glowna" eager={i < 4} /></div>)}
         </ProductRow>
       </section>
     )}
@@ -113,7 +110,7 @@ const jsonLd = [
       <section>
         <SectionHead title={`${c.icon} ${c.name}`} href={`/okazje?kategoria=${c.slug}`} />
         <ProductRow>
-          {c.items.map((p) => <div class="flex w-full md:w-[calc((100%-2rem)/3)] md:shrink-0 md:snap-start lg:w-[calc((100%-3rem)/4)]"><ProductCard product={p} pageType="glowna" /></div>)}
+          {c.items.map((p) => <div class="flex w-[78%] shrink-0 snap-start sm:w-[calc((100%-1rem)/2)] md:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-3rem)/4)]"><ProductCard product={p} pageType="glowna" /></div>)}
         </ProductRow>
       </section>
     ))}
