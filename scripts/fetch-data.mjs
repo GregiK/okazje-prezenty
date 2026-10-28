@@ -157,13 +157,16 @@ async function main() {
   const feedUrls = (process.env.LEADSTAR_FEED_URLS ?? '').split(/\s+/).map((u) => u.trim()).filter(Boolean);
   if (config.leadstar?.wlaczone && mode !== 'fixtures' && feedUrls.length) {
     const rules = { excludedWords: excluded, excludedPhrases, excludedNameRegex, excludedNameWords };
+    const doneFids = new Set();
     for (const url of feedUrls) {
       const fid = feedId(url);
+      if (doneFids.has(fid)) { log(`Feed LeadStar fid=${fid}: drugi adres do tego samego sklepu — pomijam duplikat`); continue; }
+      doneFids.add(fid);
       const cfg = (config.leadstar.feedy ?? []).find((f) => f.fid === fid);
       if (!cfg) { log(`Feed LeadStar fid=${fid}: brak opisu w programs.json → leadstar.feedy — pomijam`); continue; }
       try {
         const t0 = Date.now();
-        const r = await processFeed(await fetchFeedStream(url), fid, { rules, cap: cfg.maxProduktow ?? 150, minPrice: cfg.minCena ?? 0, perBrand: cfg.naMarke ?? 0, category: cfg.kategoria ?? null, now });
+        const r = await processFeed(await fetchFeedStream(url), fid, { rules, cap: cfg.maxProduktow ?? 150, minPrice: cfg.minCena ?? 0, perBrand: cfg.naMarke ?? 0, perFamily: cfg.naRodzine ?? 3, prefer: cfg.preferuj ? new RegExp(cfg.preferuj, 'i') : undefined, category: cfg.kategoria ?? null, now });
         feedShops.push({ programId: FEED_OFFSET + fid, name: cfg.nazwa, url: cfg.url ?? null, logo: cfg.logo ?? null, category: cfg.kategoria ?? '' });
         feedProducts.push(...r.products);
         lsInfo.feeds = [...(lsInfo.feeds ?? []), { fid, name: cfg.nazwa, total: r.stats.total, eligible: r.stats.eligible, kept: r.stats.kept }];
