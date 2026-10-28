@@ -121,13 +121,37 @@
   "leadstar": {
     "_opis": "Sieć LeadStar.pl: pobieramy zaakceptowane programy sklepowe i ich kody rabatowe (API wymaga sekretów LEADSTAR_PARTNER_ID i LEADSTAR_API_KEY). Dozwolone tylko kategorie produktu z listy poniżej — bez pożyczek, banków, ubezpieczeń, telekomunikacji, mody/odzieży/obuwia, erotyki i dla dzieci.",
     "wlaczone": true,
-    "produktyDozwolone": ["biżuteria", "dom i ogród", "hobby", "rtv i agd", "sport i zdrowie", "suplement", "uroda", "zakupy", "zwierzęta", "żywność i napoje"],
-    "wykluczoneProgramy": []
+    "produktyDozwolone": [
+      "biżuteria",
+      "dom i ogród",
+      "hobby",
+      "rtv i agd",
+      "sport i zdrowie",
+      "suplement",
+      "uroda",
+      "zakupy",
+      "zwierzęta",
+      "żywność i napoje"
+    ],
+    "wykluczoneProgramy": [],
+    "feedy": [
+      {
+        "fid": 466,
+        "nazwa": "Notino",
+        "url": "https://www.notino.pl",
+        "kategoria": "perfumy-uroda",
+        "maxProduktow": 300,
+        "minCena": 20,
+        "naMarke": 4
+      }
+    ],
+    "_opis_feedy": "Product feedy LeadStar (Narzędzia → Product feed): adresy URL feedów w sekrecie LEADSTAR_FEED_URLS (po jednym w linii), tu opis sklepu wg parametru fid z adresu. Feed = pełny katalog XML; bez historii cen, więc produkty bez znaczka obniżki."
   },
   "maxWiekFeeduDni": 150,
   "maxProduktowNaSklep": 150,
   "idealnaCenaPrezentu": 150,
   "wykluczoneSlowaWNazwie": [
+    "ciążow",
     "koszulk",
     "t-shirt",
     "tank top",
@@ -166,7 +190,11 @@
     "szkoln",
     "dla chłopca",
     "dla dziewczynki",
-    "maskotk"
+    "maskotk",
+    "podpask",
+    "tampon",
+    "prezerwatyw",
+    "higieniczn"
   ],
   "_wykluczoneSlowaWNazwie": "Słowa wykluczające produkt, jeśli występują w jego NAZWIE (odzież, obuwie, rzeczy dla dzieci/niemowląt). Serwis jest o prezentach: biżuteria, zegarki, galanteria, perfumy, kosmetyki, gadżety, jedzenie."
 }

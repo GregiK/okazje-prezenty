@@ -200,7 +200,7 @@ export function productType(name) {
  * 2) potem produkty bez obniżki — po kolei z różnych TYPÓW (zegarki, biżuteria, plecaki…; w jednym typie max
  *    `perFamily` z tej samej „rodziny” nazw), w kolejności zbliżonej do typowej ceny prezentu (`targetPrice`).
  */
-export function capProducts(list, cap = 150, { perFamily = 3, targetPrice = 150 } = {}) {
+export function capProducts(list, cap = 150, { perFamily = 3, targetPrice = 150, perBrand = 0 } = {}) {
   if (list.length <= cap) return list;
   const family = (p) => p.name.toLowerCase().split(/\s+/).slice(0, 2).join(' ');
   const out = list.filter((p) => p.discount > 0).sort((a, b) => b.discount - a.discount || a.price - b.price).slice(0, cap);
@@ -208,11 +208,17 @@ export function capProducts(list, cap = 150, { perFamily = 3, targetPrice = 150 
   const rest = list.filter((p) => !(p.discount > 0)).sort((a, b) => Math.abs(a.price - targetPrice) - Math.abs(b.price - targetPrice) || a.name.localeCompare(b.name, 'pl'));
   const buckets = new Map();
   const famCount = new Map();
+  const brandCount = new Map();
   for (const p of rest) {
+    const bk = String(p.brand ?? '').toLowerCase();
+    if (perBrand > 0 && bk) { // opcjonalny limit produktów z jednej marki (duże katalogi, np. 1000+ marek)
+      if ((brandCount.get(bk) ?? 0) >= perBrand) continue;
+    }
     const t = productType(p.name);
     const fk = t + '|' + family(p);
     if ((famCount.get(fk) ?? 0) >= perFamily) continue;
     famCount.set(fk, (famCount.get(fk) ?? 0) + 1);
+    if (perBrand > 0 && bk) brandCount.set(bk, (brandCount.get(bk) ?? 0) + 1);
     if (!buckets.has(t)) buckets.set(t, []);
     buckets.get(t).push(p);
   }
