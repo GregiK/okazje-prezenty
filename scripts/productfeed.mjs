@@ -91,7 +91,7 @@ export const DEFAULT_BANDS = [
 /** Produkty „prezentowe” (perfumy, zestawy, świece, kuferki…) wybieramy w pierwszej kolejności. */
 export const GIFT_RE = /zestaw|\bset\b|woda perfumowana|woda toaletowa|woda kolo|perfum|świec|dyfuzor|kuferek|\bbox\b|prezent/i;
 
-export async function processFeed(stream, fid, { rules = {}, cap = 150, minPrice = 0, perBrand = 0, bands = DEFAULT_BANDS, category = null, prefer = GIFT_RE, now = new Date() } = {}) {
+export async function processFeed(stream, fid, { rules = {}, cap = 150, minPrice = 0, perBrand = 0, perFamily = 3, bands = DEFAULT_BANDS, category = null, prefer = GIFT_RE, now = new Date() } = {}) {
   const stats = { total: 0, rejected: {} };
   const bump = (why) => { stats.rejected[why] = (stats.rejected[why] ?? 0) + 1; };
   const list = [];
@@ -113,14 +113,14 @@ export async function processFeed(stream, fid, { rules = {}, cap = 150, minPrice
     for (const b of bands) {
       const inBand = list.filter((x) => x.price > b.min && x.price <= b.max);
       const n = Math.round(cap * b.share);
-      const opts = { targetPrice: b.target, perBrand };
+      const opts = { targetPrice: b.target, perBrand, perFamily };
       const pref = prefer ? capProducts(inBand.filter((x) => prefer.test(x.name)), n, opts) : [];
       for (const x of pref) picked.add(x);
       if (pref.length < n) for (const x of capProducts(inBand.filter((x) => !picked.has(x)), n - pref.length, opts)) picked.add(x);
     }
     products = [...picked];
     if (products.length < cap) { // niedobór w którymś przedziale — uzupełniamy z reszty
-      const rest = capProducts(list.filter((x) => !picked.has(x)), cap - products.length, { targetPrice: 150, perBrand });
+      const rest = capProducts(list.filter((x) => !picked.has(x)), cap - products.length, { targetPrice: 150, perBrand, perFamily });
       products.push(...rest);
     }
   }

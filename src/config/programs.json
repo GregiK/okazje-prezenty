@@ -115,7 +115,8 @@
     "wykluczoneProgramy": [
       286,
       13730,
-      12354
+      12354,
+      12101
     ]
   },
   "leadstar": {
@@ -143,6 +144,17 @@
         "maxProduktow": 300,
         "minCena": 20,
         "naMarke": 4
+      },
+      {
+        "fid": 467,
+        "nazwa": "Anka Biżuteria",
+        "url": "https://www.ankabizuteria.pl",
+        "kategoria": "bizuteria",
+        "maxProduktow": 300,
+        "minCena": 30,
+        "naMarke": 0,
+        "naRodzine": 10,
+        "preferuj": "komplet|zestaw|prezent|bursztyn|naszyjnik|bransolet"
       }
     ],
     "_opis_feedy": "Product feedy LeadStar (Narzędzia → Product feed): adresy URL feedów w sekrecie LEADSTAR_FEED_URLS (po jednym w linii), tu opis sklepu wg parametru fid z adresu. Feed = pełny katalog XML; bez historii cen, więc produkty bez znaczka obniżki."
