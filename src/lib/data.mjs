@@ -14,8 +14,10 @@ export const categoryBySlug = new Map(CATEGORIES.map((c) => [c.slug, c]));
 /** Dokleja parametry śledzenia źródła sprzedaży: param1=www, param2=<typ strony>. */
 export function trackedUrl(url, pageType) {
   const u = new URL(url);
-  u.searchParams.set('param1', 'www');
-  u.searchParams.set('param2', pageType);
+  if (/(^|\.)webep1\.com$/.test(u.hostname)) { // znaczniki tylko dla webePartners
+    u.searchParams.set('param1', 'www');
+    u.searchParams.set('param2', pageType);
+  }
   return u.toString();
 }
 

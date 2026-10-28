@@ -66,8 +66,11 @@ const title = kind === 'product' ? item.name : item.title;
       if (q === 'fb') { p1 = 'fb'; p2 = 'post'; }
       else if (['glowna', 'okazje', 'kody', 'sklep', 'prezenty', 'produkt'].indexOf(q) > -1) { p2 = q; }
       var u = new URL(dest);
-      u.searchParams.set('param1', p1);
-      u.searchParams.set('param2', p2);
+      // param1/param2 to znaczniki webePartners — do linków innych sieci (np. LeadStar) ich nie dokładamy
+      if (/(^|\.)webep1\.com$/.test(u.hostname)) {
+        u.searchParams.set('param1', p1);
+        u.searchParams.set('param2', p2);
+      }
       document.getElementById('go').href = u.toString();
       location.replace(u.toString());
     </script>

@@ -9,6 +9,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { pickPrograms } from './programs.mjs';
+import { fetchLeadstar } from './leadstar.mjs';
 import { capProducts, normalizeProduct, normalizeVoucher, unwrapArray, slugify, isHttpUrl, matchCategory, feedLastUpdate } from './normalize.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -126,6 +127,27 @@ async function main() {
   const to = new Date(now.getTime() + 365 * 864e5);
   const rawVouchers = await load('GetVouchers', `/Wydawca/GetVouchers?dateFrom=${dateStr(from)}&dateTo=${dateStr(to)}`);
 
+  // --- LeadStar (opcjonalnie): zaakceptowane programy sklepowe + aktualne kody. Błąd nie blokuje wdrożenia
+  // (oferta webePartners jest kompletna), ale kody LeadStar znikną do następnej aktualizacji — widać to w logu.
+  let lsShops = [], lsVouchers = [], lsInfo = { status: 'wyłączony' };
+  const lsPartner = process.env.LEADSTAR_PARTNER_ID, lsKey = process.env.LEADSTAR_API_KEY;
+  if (config.leadstar?.wlaczone && mode !== 'fixtures') {
+    if (!lsPartner || !lsKey) {
+      lsInfo = { status: 'brak LEADSTAR_PARTNER_ID / LEADSTAR_API_KEY' };
+      log('LeadStar: brak kluczy API — pomijam');
+    } else {
+      try {
+        const ls = await fetchLeadstar({ partnerId: lsPartner, apiKey: lsKey, base: process.env.LEADSTAR_API ?? 'https://leadstar.pl', config: config.leadstar, now });
+        lsShops = ls.shops; lsVouchers = ls.vouchers;
+        lsInfo = { status: 'ok', programs: ls.counts.programs, coupons: ls.counts.coupons, shops: ls.shops.length, vouchers: ls.vouchers.length, rejected: ls.rejected };
+        log(`LeadStar: programów ${ls.counts.programs}, kodów ${ls.counts.coupons} → sklepów ${ls.shops.length}, kodów ${ls.vouchers.length}`);
+      } catch (e) {
+        lsInfo = { status: 'błąd', error: e.message };
+        log(`LeadStar: BŁĄD (${e.message}) — kody LeadStar pominięte w tej aktualizacji`);
+      }
+    }
+  }
+
   // --- sklepy
   const shops = configured.map((c) => {
     const p = programById.get(c.programId);
@@ -142,6 +164,9 @@ async function main() {
       auto: c.auto === true
     };
   });
+  for (const l of lsShops) {
+    shops.push({ programId: l.programId, slug: slugify(l.name), name: l.name, logo: l.logo, url: l.url, accepted: true, category: l.category, auto: false, network: 'leadstar' });
+  }
   const shopById = new Map(shops.map((s) => [s.programId, s]));
 
   // --- produkty
@@ -188,6 +213,7 @@ async function main() {
     vSeen.add(res.voucher.id);
     vouchers.push(res.voucher);
   }
+  vouchers.push(...lsVouchers);
   vouchers.sort((a, b) => (a.validTo ?? '9') .localeCompare(b.validTo ?? '9'));
 
   const perShop = shops.map((sh) => ({
@@ -204,6 +230,7 @@ async function main() {
     perShop,
     added: added.map((x) => x.name),
     skipped,
+    leadstar: lsInfo,
     rejected: { products: rejects, vouchers: vReject }
   };
 

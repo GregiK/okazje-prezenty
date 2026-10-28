@@ -37,6 +37,8 @@ jobs:
         env:
           WEBE_LOGIN: ${{ secrets.WEBE_LOGIN }}
           WEBE_PASSWORD: ${{ secrets.WEBE_PASSWORD }}
+          LEADSTAR_PARTNER_ID: ${{ secrets.LEADSTAR_PARTNER_ID }}
+          LEADSTAR_API_KEY: ${{ secrets.LEADSTAR_API_KEY }}
           SITE_URL: https://okazje.automatklienta.pl
           REQUIRE_LIVE: '1' # brak sekretów webePartners = błąd, nie deploy fixtures
 
