@@ -130,12 +130,15 @@ async function main() {
   // --- LeadStar (opcjonalnie): zaakceptowane programy sklepowe + aktualne kody. Błąd nie blokuje wdrożenia
   // (oferta webePartners jest kompletna), ale kody LeadStar znikną do następnej aktualizacji — widać to w logu.
   let lsShops = [], lsVouchers = [], lsInfo = { status: 'wyłączony' };
-  const lsPartner = process.env.LEADSTAR_PARTNER_ID, lsKey = process.env.LEADSTAR_API_KEY;
+  // przycinamy białe znaki (częsty błąd przy wklejaniu sekretów: spacja albo nowa linia na końcu)
+  const lsPartner = process.env.LEADSTAR_PARTNER_ID?.trim(), lsKey = process.env.LEADSTAR_API_KEY?.trim();
   if (config.leadstar?.wlaczone && mode !== 'fixtures') {
     if (!lsPartner || !lsKey) {
       lsInfo = { status: 'brak LEADSTAR_PARTNER_ID / LEADSTAR_API_KEY' };
       log('LeadStar: brak kluczy API — pomijam');
     } else {
+      // diagnostyka bez ujawniania klucza: ID partnera to liczba (nie login/e-mail), klucz pokazujemy tylko jako długość
+      log(`LeadStar: partner_id=${lsPartner} (${/^\d+$/.test(lsPartner) ? 'liczba, OK' : 'UWAGA: to nie jest liczba — wpisz ID z panelu, nie login'}), klucz API: ${lsKey.length} znaków`);
       try {
         const ls = await fetchLeadstar({ partnerId: lsPartner, apiKey: lsKey, base: process.env.LEADSTAR_API ?? 'https://leadstar.pl', config: config.leadstar, now });
         lsShops = ls.shops; lsVouchers = ls.vouchers;
