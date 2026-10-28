@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { pickPrograms } from './programs.mjs';
 import { fetchLeadstar } from './leadstar.mjs';
+import { processFeed, fetchFeedStream, feedId, FEED_OFFSET } from './productfeed.mjs';
 import { capProducts, normalizeProduct, normalizeVoucher, unwrapArray, slugify, isHttpUrl, matchCategory, feedLastUpdate } from './normalize.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -151,6 +152,29 @@ async function main() {
     }
   }
 
+  // --- Product feedy LeadStar: pełne katalogi sklepów (XML po adresie URL z sekretu, bez klucza API)
+  const feedShops = [], feedProducts = [];
+  const feedUrls = (process.env.LEADSTAR_FEED_URLS ?? '').split(/\s+/).map((u) => u.trim()).filter(Boolean);
+  if (config.leadstar?.wlaczone && mode !== 'fixtures' && feedUrls.length) {
+    const rules = { excludedWords: excluded, excludedPhrases, excludedNameRegex, excludedNameWords };
+    for (const url of feedUrls) {
+      const fid = feedId(url);
+      const cfg = (config.leadstar.feedy ?? []).find((f) => f.fid === fid);
+      if (!cfg) { log(`Feed LeadStar fid=${fid}: brak opisu w programs.json → leadstar.feedy — pomijam`); continue; }
+      try {
+        const t0 = Date.now();
+        const r = await processFeed(await fetchFeedStream(url), fid, { rules, cap: cfg.maxProduktow ?? 150, minPrice: cfg.minCena ?? 0, perBrand: cfg.naMarke ?? 0, category: cfg.kategoria ?? null, now });
+        feedShops.push({ programId: FEED_OFFSET + fid, name: cfg.nazwa, url: cfg.url ?? null, logo: cfg.logo ?? null, category: cfg.kategoria ?? '' });
+        feedProducts.push(...r.products);
+        lsInfo.feeds = [...(lsInfo.feeds ?? []), { fid, name: cfg.nazwa, total: r.stats.total, eligible: r.stats.eligible, kept: r.stats.kept }];
+        log(`Feed LeadStar ${cfg.nazwa} (fid=${fid}): ${r.stats.total} w pliku → ${r.stats.eligible} po filtrach → ${r.stats.kept} na stronie (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
+      } catch (e) {
+        lsInfo.feeds = [...(lsInfo.feeds ?? []), { fid, name: cfg.nazwa, error: e.message }];
+        log(`Feed LeadStar ${cfg.nazwa} (fid=${fid}): BŁĄD (${e.message}) — sklep pominięty w tej aktualizacji`);
+      }
+    }
+  }
+
   // --- sklepy
   const shops = configured.map((c) => {
     const p = programById.get(c.programId);
@@ -169,6 +193,9 @@ async function main() {
   });
   for (const l of lsShops) {
     shops.push({ programId: l.programId, slug: slugify(l.name), name: l.name, logo: l.logo, url: l.url, accepted: true, category: l.category, auto: false, network: 'leadstar' });
+  }
+  for (const f of feedShops) {
+    shops.push({ programId: f.programId, slug: slugify(f.name), name: f.name, logo: f.logo, url: f.url, accepted: true, category: f.category, auto: false, network: 'leadstar' });
   }
   const shopById = new Map(shops.map((s) => [s.programId, s]));
 
@@ -199,6 +226,7 @@ async function main() {
   }
   products.length = 0;
   products.push(...capped);
+  products.push(...feedProducts);
   products.sort((a, b) => b.discount - a.discount || a.price - b.price);
 
   // --- kody
