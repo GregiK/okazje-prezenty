@@ -11,22 +11,22 @@ const description = 'Kalkulator obligacji: sprawdź, ile możesz zarobić na obl
 const jsonLd = [breadcrumbs(Astro.site, [{ name: 'Strona główna', path: '/' }, { name: 'Kalkulator obligacji', path: '/kalkulator-obligacji' }])];
 ---
 <Base title="Kalkulator obligacji" description={description} jsonLd={jsonLd}>
-  <div class="container-wide max-w-3xl space-y-5 py-8 leading-relaxed">
-    <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Kalkulator obligacji</h1>
-    <p>Sprawdź, ile mogą Ci przynieść obligacje: wpisz kwotę i okres, a kalkulator pokaże przykładowe oferty i szacowany zysk.</p>
+  <div class="container-wide space-y-5 py-8 leading-relaxed">
+    <h1 class="max-w-3xl text-3xl font-extrabold tracking-tight sm:text-4xl">Kalkulator obligacji</h1>
+    <p class="max-w-3xl">Sprawdź, ile mogą Ci przynieść obligacje: wpisz kwotę i okres, a kalkulator pokaże przykładowe oferty i szacowany zysk.</p>
 
-    <p class="rounded-xl border border-line bg-white p-3 text-sm text-muted">
+    <p class="max-w-3xl rounded-xl border border-line bg-white p-3 text-sm text-muted">
       <strong>Materiał reklamowy.</strong> Kalkulator udostępnia partner LeadStar, a nasz serwis może otrzymać prowizję za zawarcie umowy po kliknięciu w ofertę. Obligacje wiążą się z ryzykiem, w tym ryzykiem utraty części lub całości zainwestowanych środków. Wyniki mają charakter orientacyjny i <strong>nie stanowią porady inwestycyjnej ani rekomendacji</strong>.
     </p>
 
-    <section aria-labelledby="calc-h" class="rounded-2xl border border-line bg-white p-4 shadow-sm">
+    <section aria-labelledby="calc-h" class="-mx-4 border-y border-line bg-white px-3 py-4 shadow-sm sm:mx-0 sm:max-w-4xl sm:rounded-2xl sm:border sm:p-5">
       <h2 id="calc-h" class="sr-only">Kalkulator</h2>
       <div id="bond-box">
         <p class="text-sm text-muted">Kalkulator jest ładowany z serwera partnera (<code>obligacje.leadstar.com.pl</code>) dopiero po kliknięciu — wtedy ten serwis może zapisać własne pliki cookie i zobaczy Twój adres IP. Szczegóły w <a href="/polityka-prywatnosci" class="underline hover:text-berry">polityce prywatności</a>.</p>
         <button id="bond-load" type="button" class="btn btn-primary mt-3 w-full sm:w-auto sm:min-w-52">Pokaż kalkulator</button>
         <p class="mt-3 text-sm text-muted">Nie działa? <a href={BOND_PAGE} target="_blank" rel="sponsored nofollow noopener" class="font-bold text-berry underline">Otwórz kalkulator w nowej karcie</a>.</p>
       </div>
-      <div id="bond-widget" class="mt-3" aria-live="polite"></div>
+      <div id="bond-widget" class="mt-3 w-full min-w-0 overflow-x-auto text-base [&_*]:max-w-full" aria-live="polite"></div>
       <noscript><p class="text-sm text-muted">Kalkulator wymaga włączonej obsługi JavaScript. <a href={BOND_PAGE} target="_blank" rel="sponsored nofollow noopener" class="font-bold text-berry underline">Otwórz go w nowej karcie</a>.</p></noscript>
     </section>
   </div>
