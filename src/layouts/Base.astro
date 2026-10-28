@@ -9,6 +9,7 @@ const ogImageUrl = ogImage ?? new URL('/og-image.png', Astro.site).toString();
 const nav = [
   { href: '/okazje', label: 'Okazje dla każdego', short: 'Okazje' },
   { href: '/kody-rabatowe', label: 'Kody rabatowe', short: 'Kody' },
+  { href: '/kalkulator-obligacji', label: 'Kalkulator obligacji', short: 'Obligacje' },
   { href: '/o-serwisie', label: 'O serwisie' }
 ];
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
@@ -48,7 +49,7 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
         <nav aria-label="Główna nawigacja" class="flex gap-1 text-sm font-semibold sm:gap-2 sm:text-base">
           {nav.map((n) => (
             <a href={n.href} aria-current={path === n.href ? 'page' : undefined}
-               class:list={['rounded-lg px-2.5 py-2 hover:bg-blush sm:px-3', path === n.href && 'bg-blush text-berry', n.href === '/o-serwisie' && 'hidden sm:block']}>
+               class:list={['rounded-lg px-2.5 py-2 hover:bg-blush sm:px-3', path === n.href && 'bg-blush text-berry', ['/o-serwisie', '/kalkulator-obligacji'].includes(n.href) && 'hidden sm:block']}>
               {n.short ? <><span class="sm:hidden">{n.short}</span><span class="hidden sm:inline">{n.label}</span></> : n.label}
             </a>
           ))}
@@ -64,6 +65,7 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
         <nav aria-label="Stopka" class="flex flex-wrap gap-x-5 gap-y-2 font-semibold text-ink">
           <a href="/okazje" class="hover:text-berry">Okazje</a>
           <a href="/kody-rabatowe" class="hover:text-berry">Kody rabatowe</a>
+          <a href="/kalkulator-obligacji" class="hover:text-berry">Kalkulator obligacji</a>
           <a href="/o-serwisie" class="hover:text-berry">O serwisie</a>
           <a href="/polityka-prywatnosci" class="hover:text-berry">Polityka prywatności</a>
         </nav>
