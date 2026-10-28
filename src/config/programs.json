@@ -118,6 +118,12 @@
       12354
     ]
   },
+  "leadstar": {
+    "_opis": "Sieć LeadStar.pl: pobieramy zaakceptowane programy sklepowe i ich kody rabatowe (API wymaga sekretów LEADSTAR_PARTNER_ID i LEADSTAR_API_KEY). Dozwolone tylko kategorie produktu z listy poniżej — bez pożyczek, banków, ubezpieczeń, telekomunikacji, mody/odzieży/obuwia, erotyki i dla dzieci.",
+    "wlaczone": true,
+    "produktyDozwolone": ["biżuteria", "dom i ogród", "hobby", "rtv i agd", "sport i zdrowie", "suplement", "uroda", "zakupy", "zwierzęta", "żywność i napoje"],
+    "wykluczoneProgramy": []
+  },
   "maxWiekFeeduDni": 150,
   "maxProduktowNaSklep": 150,
   "idealnaCenaPrezentu": 150,
