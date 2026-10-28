@@ -155,6 +155,10 @@ async function main() {
   // --- Product feedy LeadStar: pełne katalogi sklepów (XML po adresie URL z sekretu, bez klucza API)
   const feedShops = [], feedProducts = [];
   const feedUrls = (process.env.LEADSTAR_FEED_URLS ?? '').split(/\s+/).map((u) => u.trim()).filter(Boolean);
+  if (config.leadstar?.wlaczone && mode !== 'fixtures' && !feedUrls.length && (config.leadstar.feedy ?? []).length) {
+    lsInfo.feeds = [];
+    log(`Feed LeadStar: sekret LEADSTAR_FEED_URLS jest pusty lub nie istnieje — pomijam ${(config.leadstar.feedy ?? []).map((f) => f.nazwa).join(', ')}`);
+  }
   if (config.leadstar?.wlaczone && mode !== 'fixtures' && feedUrls.length) {
     const rules = { excludedWords: excluded, excludedPhrases, excludedNameRegex, excludedNameWords };
     const doneFids = new Set();
